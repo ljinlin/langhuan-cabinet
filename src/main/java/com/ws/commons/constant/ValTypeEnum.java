@@ -5,7 +5,17 @@ package com.ws.commons.constant;
  * @author  ljl·尘无尘
  * @date Oct 12, 2018
  */
-public enum ObjTypeEnum {
+public enum ValTypeEnum {
+	/**
+	 * 长度为0的字符串对象
+	 *  <br>
+	 */
+	BLANK(""),
+	/**
+	 * null对象
+	 *  <br>
+	 */
+	NULL("null"),
 	/**
 	 * 有意义的对象，非BLANK，NULL
 	 *  <br>
@@ -19,7 +29,7 @@ public enum ObjTypeEnum {
 
 	public final String code;
 
-	ObjTypeEnum(String code) {
+	ValTypeEnum(String code) {
 		this.code = code;
 	}
 
