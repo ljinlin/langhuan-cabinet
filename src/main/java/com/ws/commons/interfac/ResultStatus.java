@@ -42,6 +42,12 @@ public class ResultStatus {
 	 */
 	public static final ResultStatus SYS_ERROR = new ResultStatus(
 			UnifiedStatusEnum.SYS_ERROR.code, UnifiedStatusEnum.SYS_ERROR.msg);
+	
+	/**
+	 * 警告的状态
+	 */
+	public static final ResultStatus WARNING = new ResultStatus(
+			UnifiedStatusEnum.WARNING.code, UnifiedStatusEnum.WARNING.msg);
 
 	public String getMsg() {
 		return msg;

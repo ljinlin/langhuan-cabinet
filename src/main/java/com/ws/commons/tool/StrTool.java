@@ -109,10 +109,21 @@ public class StrTool {
 		}
 		return true;
 	}
+	public static String trimStr(String src,String trimStr) {
+		if(src.indexOf(trimStr)==0) {
+			src=src.replaceFirst(trimStr, "");
+		}
+		int len=src.length()-trimStr.length();
+		if(src.lastIndexOf(trimStr)==len) {
+			src=src.substring(0, len);
+		}
+		return src;
+	}
 
 	public static boolean checkNotEmpty(Object obj) {
 		return !checkEmpty(obj);
 	}
+	
 
 	@SuppressWarnings("unchecked")
 	public static <E> List<E> arrayToList(Object[] ary, Class<E> E) {
@@ -123,4 +134,5 @@ public class StrTool {
 		return list;
 	}
 
+	
 }

@@ -124,6 +124,8 @@ public class Result {
 		res.data = data;
 		return res;
 	}
+	
+
 
 	/**
 	 * 参数异常状态的结果
@@ -144,6 +146,17 @@ public class Result {
 	 */
 	public static Result paramError(String msg) {
 		Result res = new Result(ResultStatus.SUCCESS.code, msg);
+		return res;
+	}
+	/**
+	 * 参数异常状态的结果
+	 * 
+	 * @param msg
+	 *            自定义参数异常提示语
+	 * @return
+	 */
+	public static Result warning(String msg) {
+		Result res = new Result(ResultStatus.WARNING.code, msg);
 		return res;
 	}
 
@@ -180,10 +193,26 @@ public class Result {
 			throw new ResultException(this);
 		}
 	}
+	public void throwError()  {
+			throw new ResultException(this);
+	}
 
 	@Override
 	public String toString() {
 		return "Result [data=" + data + ", status=" + status + "]";
 	}
 
+	public boolean isSuccess() {
+		if(this.status==ResultStatus.SUCCESS) {
+			return true;
+		}
+		return false;
+	}
+	public boolean isNoError() {
+		if(this.status==ResultStatus.SUCCESS||this.status==ResultStatus.WARNING) {
+			return true;
+		}
+		return false;
+	}
+	
 }
