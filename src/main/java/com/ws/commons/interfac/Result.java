@@ -188,10 +188,17 @@ public class Result {
 	 * 如果是错误状态(排除成功和警告的状态)，抛出ResultException异常
 	 * 
 	 */
-	public void throwIfError()  {
+	public Result throwIfError()  {
 		if (this.status.code == ResultStatus.PARAM_ERROR.code || this.status.code == ResultStatus.SYS_ERROR.code) {
 			throw new ResultException(this);
 		}
+		return this;
+	}
+	public Result throwIfNoSuccess()  {
+		if (this.status.code != ResultStatus.SUCCESS.code) {
+			throw new ResultException(this);
+		}
+		return this;
 	}
 	public void throwError()  {
 			throw new ResultException(this);
