@@ -1,6 +1,7 @@
 package com.ws.commons.algorithm;
 
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -118,6 +119,30 @@ public class SequenceGenerate {
 	public static String nexId(String sequenceKey) {
 		return nexId(sequenceKey, SequenceGenerate.MAX_NO);
 	}
+	
+	public static LocalDateTime getDateTiemById(String id){
+		int year=Integer.parseInt("20"+id.substring(0, 2));
+		int month=Integer.parseInt(id.substring(2, 4));
+		int day=Integer.parseInt(id.substring(4, 6));
+		int hour=Integer.parseInt(id.substring(6, 8));
+		int minute=Integer.parseInt(id.substring(8, 10));
+		int second=Integer.parseInt(id.substring(10, 12));
+		
+		LocalDateTime ldt=LocalDateTime.of(year, month, day,hour, minute,second);
+		return ldt;
+	}
+	
+	
+	/**
+	 *   时间标记的序列，因为目前的实现本来就是时间标记的序列，若今后扩展，那么 nexId 返回的将不一定是时间标记的序列
+	 * @param sequenceKey 序列key，自定义一个key，每次获取都会在对应的key首次获取序列值的基础上递增
+	 * @return
+	 */
+	public static String nexIdForTimeStamp(String sequenceKey) {
+		return nexId(sequenceKey, SequenceGenerate.MAX_NO);
+	}
+
+	
 
 	/**
 	 * 

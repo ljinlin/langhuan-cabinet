@@ -4,7 +4,11 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import com.ws.commons.bean.ExcelResolveBean;
 
 public class ClassTool {
 
@@ -55,7 +59,37 @@ public class ClassTool {
 		return fields;
 	}
 	
+	/**
+	 * 获取非私有、非静态的字段(包含（非Object）父类的)
+	 * 
+	 * @param clazz
+	 * @param getFinal 是否获取常量字段
+	 * @return
+	 */
+	public static Map<String,Field> getDecararedFieldsMap(Class<?> clazz,boolean getFinal) {
+		Map<String,Field> fields = new HashMap<String,Field>();
+		Class<?> nextClass = clazz;
+		while (nextClass!=null&&nextClass != Object.class) {
+			Field[] fary = nextClass.getDeclaredFields();
+			for (Field f : fary) {
+				int modifiers = f.getModifiers();
+				if (Modifier.isStatic(modifiers))
+					continue;
+				if (Modifier.isFinal(modifiers)&&getFinal)
+					continue;
+				fields.put(f.getName(), f);
+			}
+			nextClass = nextClass.getSuperclass();
+		}
+		return fields;
+	}
+	
 
+
+	
+
+
+	
 	
 	/**
 	 * 是否含有非私有、非静态的函数(不包含父类的)
@@ -75,4 +109,6 @@ public class ClassTool {
 		return false;
 	}
 
+	
+	
 }

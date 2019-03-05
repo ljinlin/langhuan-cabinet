@@ -1,5 +1,6 @@
 package com.ws.commons.tool;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -7,6 +8,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class StrTool {
+	
+	public static final String EMPTY="";
+	
 	/**
 	 * @MethodName : setFieldValueByName
 	 * @Description : 根据字段名给对象的字段赋值
@@ -17,33 +21,12 @@ public class StrTool {
 	 * @param o
 	 *            对象
 	 */
-	public static String objToString(Object value) {
+	public static String toString(Object value) {
 		if (value == null) {
 			return "";
 		}
-		String result = null;
+		return value.toString();
 
-		// 根据字段类型给字段赋值
-		if (value instanceof String) {
-			result = value.toString();
-		} else if (value instanceof Double) {
-			result = value.toString();
-		} else if (value instanceof Long) {
-			result = value.toString();
-		} else if (value instanceof Integer) {
-			result = value.toString();
-		} else if (value instanceof Short) {
-			result = value.toString();
-		} else if (value instanceof Float) {
-			result = value.toString();
-		} else if (value instanceof Byte) {
-			result = value.toString();
-		} else if (value instanceof Character) {
-			result = value.toString();
-		} else {
-			result = value.toString();
-		}
-		return result;
 	}
 
 	public static String getUUId() {
@@ -119,12 +102,18 @@ public class StrTool {
 		}
 		return src;
 	}
+	
 
 	public static boolean checkNotEmpty(Object obj) {
 		return !checkEmpty(obj);
 	}
 	
-
+	public static String getSuffix(String str){
+		return 	str.substring(str.lastIndexOf("."));
+	}
+	public static String getPrefix(String str){
+		return 	str.substring(0,str.lastIndexOf("."));
+	}
 	@SuppressWarnings("unchecked")
 	public static <E> List<E> arrayToList(Object[] ary, Class<E> E) {
 		List<E> list = new ArrayList<E>();

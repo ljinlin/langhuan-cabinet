@@ -3,7 +3,9 @@
   <groupId>com.ws.framework</groupId>
   <artifactId>commons</artifactId>
   <version>0.0.1-SNAPSHOT</version>
-  
+  	<properties>
+		<poi.v>3.7</poi.v>
+	</properties>
   <dependencies>
 			<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -15,5 +17,25 @@
             <artifactId>spring-boot-starter-jdbc</artifactId>
 			<version>2.0.3.RELEASE</version>
         </dependency>
+        		<dependency>
+			<groupId>org.apache.poi</groupId>
+			<artifactId>poi</artifactId>
+			<version>${poi.v}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.poi</groupId>
+			<artifactId>poi-ooxml</artifactId>
+			<version>${poi.v}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.poi</groupId>
+			<artifactId>poi-examples</artifactId>
+			<version>${poi.v}</version>
+		</dependency>
+			<dependency>
+			<groupId>commons-lang</groupId>
+			<artifactId>commons-lang</artifactId>
+			<version>2.6</version>
+		</dependency>
   </dependencies>
 </project>
