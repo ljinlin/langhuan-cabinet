@@ -39,25 +39,25 @@ public class ExcelResolveBean {
 	 * 处理数据的对象
 	 */
 	private HandleKV handleKV;
-	
+
 	/**
 	 * 是否接受响应消息
 	 */
-	private Boolean isReceiveRespMsg=false;
-	
+	private Boolean isReceiveRespMsg = false;
+
 	/**
 	 * 针对每行数据的响应消息
 	 */
-	private static final ThreadLocal<LinkedHashMap<Integer, String>> RESP_ROW_MSG=new ThreadLocal<>();
+	private static final ThreadLocal<LinkedHashMap<Integer, String>> RESP_ROW_MSG = new ThreadLocal<>();
 
-	
 	/**
 	 * excel文件输入流
 	 */
-	private static final ThreadLocal<InputStream> EXCEL_INPUT_STREAM=new ThreadLocal<>();
-	
-//	private static final ThreadLocal<ExcelResolveBean> CURRENT_INSTANCE=new ThreadLocal<>();
-	
+	private static final ThreadLocal<InputStream> EXCEL_INPUT_STREAM = new ThreadLocal<>();
+
+	// private static final ThreadLocal<ExcelResolveBean> CURRENT_INSTANCE=new
+	// ThreadLocal<>();
+
 	/**
 	 * 要映射的实体
 	 */
@@ -67,14 +67,14 @@ public class ExcelResolveBean {
 	}
 
 	public ExcelResolveBean(LinkedHashMap<String, String> fieldMap, int dataStartIndex, int titleFieldIndex,
-			String sheetName,Boolean isReceiveRespMsg,Class<?> mapClass) {
+			String sheetName, Boolean isReceiveRespMsg, Class<?> mapClass) {
 		super();
 		this.fieldMap = fieldMap;
 		this.dataStartIndex = dataStartIndex;
 		this.titleFieldIndex = titleFieldIndex;
 		this.sheetName = sheetName;
-		this.isReceiveRespMsg=isReceiveRespMsg;
-		this.mapClass=mapClass;
+		this.isReceiveRespMsg = isReceiveRespMsg;
+		this.mapClass = mapClass;
 	}
 
 	public LinkedHashMap<String, String> getFieldMap() {
@@ -125,10 +125,9 @@ public class ExcelResolveBean {
 		this.handleKV = handleKV;
 	}
 
-	public  InputStream getExcelInputStream() {
+	public InputStream getExcelInputStream() {
 		return EXCEL_INPUT_STREAM.get();
 	}
-
 
 	public Class<?> getMapClass() {
 		return mapClass;
@@ -138,36 +137,33 @@ public class ExcelResolveBean {
 		this.mapClass = mapClass;
 	}
 
-	public  LinkedHashMap<Integer, String> getRespRowMsg() {
+	public LinkedHashMap<Integer, String> getRespRowMsg() {
 		return RESP_ROW_MSG.get();
 	}
-	
-	
-	public  String getRespRowMsgOfString() {
-		LinkedHashMap<Integer, String> respMsgMap=RESP_ROW_MSG.get();
-		if(respMsgMap!=null&&respMsgMap.size()>0) {
-			StringBuilder sb=new StringBuilder();
-			respMsgMap.forEach((k,v)->{
-				sb.append("第"+k+"行："+v+"</br>");
+
+	public String getRespRowMsgOfString() {
+		LinkedHashMap<Integer, String> respMsgMap = RESP_ROW_MSG.get();
+		if (respMsgMap != null && respMsgMap.size() > 0) {
+			StringBuilder sb = new StringBuilder();
+			respMsgMap.forEach((k, v) -> {
+				sb.append("第" + k + "行：" + v + "</br>");
 			});
 			return sb.toString();
 		}
 		return StrTool.EMPTY;
 	}
 
-
-	public  void startResolve(InputStream excelInputStream) {
-		if(isReceiveRespMsg) {
-			LinkedHashMap<Integer, String> respRowMsg=RESP_ROW_MSG.get();
-			if(respRowMsg==null) {
-				respRowMsg=new LinkedHashMap<>();
+	public void startResolve(InputStream excelInputStream) {
+		if (isReceiveRespMsg) {
+			LinkedHashMap<Integer, String> respRowMsg = RESP_ROW_MSG.get();
+			if (respRowMsg == null) {
+				respRowMsg = new LinkedHashMap<>();
 				RESP_ROW_MSG.set(respRowMsg);
 			}
 		}
 		EXCEL_INPUT_STREAM.set(excelInputStream);
-//		CURRENT_INSTANCE.set(this);
+		// CURRENT_INSTANCE.set(this);
 	}
-	
 
 	public Boolean getIsReceiveRespMsg() {
 		return isReceiveRespMsg;
