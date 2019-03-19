@@ -21,7 +21,7 @@ public class DynamicDataSource extends AbstractRoutingDataSource implements Infr
 	protected Object determineCurrentLookupKey() {
 		return contextHolder.get();
 	}
-
+ 
 	@Override
 	public Object getWrappedObject() {
 		return determineTargetDataSource();
