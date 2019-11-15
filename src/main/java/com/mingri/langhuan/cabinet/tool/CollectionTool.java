@@ -5,6 +5,11 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * 集合工具
+ * @author ljl
+ *
+ */
 public class CollectionTool {
 
 	private CollectionTool() {
@@ -13,6 +18,7 @@ public class CollectionTool {
 	public static boolean notEmpty(Collection<?> collection) {
 		return collection != null && !collection.isEmpty();
 	}
+	
 	public static boolean isEmpty(Collection<?> collection) {
 		return !notEmpty(collection);
 	}
@@ -55,11 +61,11 @@ public class CollectionTool {
 		if (groupCount >= size) {
 			list.forEach(e -> subedList.add(Collections.singletonList(e)));
 		} else {
-			// 残余
+			// 。残余
 			int residue = size % groupCount;
-			// 平均
+			// 。平均
 			int average = size / groupCount;
-			// 残余分配
+			// 。残余分配
 			int spoilsCount = residue;
 			for (int i = 0; i < groupCount; i++) {
 				int fromIndex = i * average + (residue - spoilsCount);

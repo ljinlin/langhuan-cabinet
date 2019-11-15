@@ -8,8 +8,8 @@ package com.mingri.langhuan.cabinet.constant;
  */
 public enum LogicCmp {
 	
-	and("and"),
-	or("or");
+	AND("and"),
+	OR("or");
 
 	public final String code;
 

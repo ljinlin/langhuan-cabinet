@@ -1,5 +1,10 @@
 package com.mingri.langhuan.cabinet.constant;
 
+/**
+ * 操作类型枚举,CRUD
+ * @author ljl
+ *
+ */
 public enum OperTypeEnum {
 	ADD(1, "新增"),
 	// <br>
@@ -16,7 +21,7 @@ public enum OperTypeEnum {
 		this.code = code;
 		this.msg = msg;
 	}
-	public static OperTypeEnum codeOf(int code) {
+	public static OperTypeEnum ofCode(int code) {
 		for (OperTypeEnum e : OperTypeEnum.values()) {
 			if (e.code == code) {
 				return e;

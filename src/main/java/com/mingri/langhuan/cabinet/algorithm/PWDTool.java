@@ -2,6 +2,10 @@ package com.mingri.langhuan.cabinet.algorithm;
 
 import java.security.MessageDigest;
 
+import javax.crypto.Cipher;
+import javax.crypto.spec.SecretKeySpec;
+
+import org.apache.xmlbeans.impl.util.Base64;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -11,6 +15,9 @@ public class PWDTool {
 	
 	private static final char[] HEX_DIGITS = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e',
 			'f' };
+	
+	private static byte[] key = { 0x74, 0x68, 0x69, 0x73, 0x49, 0x73, 0x41,
+			0x53, 0x65, 0x63, 0x72, 0x65, 0x74, 0x4b, 0x65, 0x79 };// "thisIsASecretKey";
 
 	/**
 	 * 转换字节数组为16进制字串
@@ -53,5 +60,44 @@ public class PWDTool {
 		}
 		return resultString;
 	}
+	
+	/**
+	 * 加密函数.
+	 * 
+	 * @param origin  要加密的参数
+	 * @return 返回加密字符串
+	 */
+	public static String encrypt(String origin) {
+		try {
+			Cipher cipher = Cipher.getInstance("AES/ECB/PKCS5Padding");
+			final SecretKeySpec secretKey = new SecretKeySpec(key, "AES");
+			cipher.init(Cipher.ENCRYPT_MODE, secretKey);
+			final byte[] encryptedString = Base64.encode(cipher
+					.doFinal(origin.getBytes()));
+			return new String(encryptedString, "UTF-8");
+		} catch (Exception e) {
+		}
+		return null;
 
+	}
+
+	/**
+	 * 解密函数.
+	 * 
+	 * @param cipherStr 要解密的参数
+	 * @return 返回解密字符串
+	 */
+	public static String decrypt(String cipherStr) {
+		try {
+			Cipher cipher = Cipher.getInstance("AES/ECB/PKCS5Padding");
+			final SecretKeySpec secretKey = new SecretKeySpec(key, "AES");
+			cipher.init(Cipher.DECRYPT_MODE, secretKey);
+			final String decryptedString = new String(cipher.doFinal(Base64
+					.decode(cipherStr.getBytes("UTF-8"))));
+			return decryptedString;
+		} catch (Exception e) {
+
+		}
+		return null;
+	}
 }

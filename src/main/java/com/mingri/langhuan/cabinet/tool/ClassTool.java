@@ -8,6 +8,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/***
+ * class工具类
+ * @author ljl
+ *
+ */
 public class ClassTool {
 	
 	private ClassTool() {}
@@ -107,6 +112,8 @@ public class ClassTool {
 	}
 
 	
+	
+
 	
 
 }

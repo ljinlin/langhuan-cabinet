@@ -5,7 +5,7 @@ import java.util.function.Function;
 public interface ICache {
 
 	/**
-	 * 队列存储，在末尾添加元素
+	 * 队列存储，在左边添加元素
 	 * 
 	 * @param key 缓存键
 	 * @param value 缓存值 
@@ -13,7 +13,7 @@ public interface ICache {
 	void leftPush(String key, Object value);
 
 	/**
-	 * 队列存储，在末尾添加元素
+	 * 队列存储，在右边添加元素
 	 * 
 	 * @param key 缓存键
 	 * @param value 缓存值
@@ -21,7 +21,7 @@ public interface ICache {
 	void rightPush(String key, Object value);
 
 	/**
-	 * 队列存储，在开头添加元素
+	 * 队列存储，在右边添加元素
 	 * 
 	 * @param key 缓存键
 	 * @param value 缓存值

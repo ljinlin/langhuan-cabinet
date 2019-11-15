@@ -3,7 +3,7 @@ package com.mingri.langhuan.cabinet.exception;
 /**
  * 数据匹配错误
  * 
- * @author ljl 2019年11月12日
+ * @author ljl 
  */
 public class DataMatchException extends IllegalArgumentException {
 

@@ -1,12 +1,12 @@
 package com.mingri.langhuan.cabinet.constant;
 
 /**
- * 统一状态
+ * 操作状态枚举
  * 
- * @author 尘无尘
+ * @author ljl
  *
  */
-public enum UnifiedStatusEnum {
+public enum OperStatusEnum {
 
 	SUCCESS(UnifiedCode.Oper.SUCCESS + "", "成功"),
 	// <br>
@@ -14,12 +14,14 @@ public enum UnifiedStatusEnum {
 	// <br>
 	SYS_ERROR(UnifiedCode.Oper.SYS_ERROR + "", "系统错误"),
 	// <br>
-	WARNING(UnifiedCode.Oper.WARNING + "", "警告");
+	WARNING(UnifiedCode.Oper.WARNING + "", "警告"),
+	// <br>
+	IMPERFECT(UnifiedCode.Oper.IMPERFECT + "", "提醒");
 
 	public final String code;
 	public final String msg;
 
-	UnifiedStatusEnum(String code, String msg) {
+	OperStatusEnum(String code, String msg) {
 		this.code = code;
 		this.msg = msg;
 	}

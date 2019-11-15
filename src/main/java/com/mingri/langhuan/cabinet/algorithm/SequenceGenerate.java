@@ -39,7 +39,6 @@ public class SequenceGenerate {
 	public void setCps(Integer cps) {
 		if (cps != null) {
 			MAX_NO = cps + 1;
-			MAX_LEN = String.valueOf(cps).length();
 		}
 	}
 
@@ -52,10 +51,6 @@ public class SequenceGenerate {
 	 * 每秒最高并发量
 	 */
 	private static int MAX_NO = 100001;
-	/**
-	 * 序号长度
-	 */
-	private static int MAX_LEN = String.valueOf(MAX_NO).length();
 
 	/**
 	 * 应用编号
@@ -92,22 +87,22 @@ public class SequenceGenerate {
 			throw new RuntimeException("已经初始化配置，不能再配置");
 		}
 		MAX_NO = cps + 1;
-		MAX_LEN = String.valueOf(MAX_NO).length();
 		APP_NO = appNo;
 	}
 
 
 	private static String getSecond() {
-		return DateTool.yyMMddHHmmss_TFORMAT.format(LocalDateTime.now());
+		return DateTool.yyMdHms_FMTS.format(LocalDateTime.now());
 	}
 
 	/**
 	 * 不够序号的长度补0
-	 * @param srcNum
+	 * @param srcNum  要补0的数字
+	 * @param max  小于该数字要补0
 	 */
-	private static String fill0(int srcNum) {
+	private static String fill0(int srcNum,int max) {
 		String strSrc = String.valueOf(srcNum);
-		while (strSrc.length() < SequenceGenerate.MAX_LEN) {
+		while (strSrc.length() < (max+"").length()) {
 			strSrc = "0" + strSrc;
 		}
 		return strSrc;
@@ -169,16 +164,16 @@ public class SequenceGenerate {
 		int no = sequence.incrementAndGet();
 		String strNo = null;
 		if (no < cps) {
-			strNo = SequenceGenerate.fill0(no);
+			strNo = SequenceGenerate.fill0(no,cps);
 		} else {
 			synchronized (SEQUENCE_MAP) {
 				no = sequence.incrementAndGet();
 				if (no < cps) {
-					strNo = SequenceGenerate.fill0(no);
+					strNo = SequenceGenerate.fill0(no,cps);
 				} else {
 					sequence.set(START_NUM);
 					no = sequence.incrementAndGet();
-					strNo = SequenceGenerate.fill0(no);
+					strNo = SequenceGenerate.fill0(no,cps);
 				}
 			}
 		}

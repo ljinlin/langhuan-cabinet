@@ -1,7 +1,7 @@
 package com.mingri.langhuan.cabinet.constant;
 
 /**
- * 对象类型
+ * 值类型
  * @author  ljl
  */
 public enum ValTypeEnum {

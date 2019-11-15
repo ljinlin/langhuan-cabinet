@@ -13,7 +13,7 @@ public class ResultException extends RuntimeException {
 	}
 
 	public ResultException(Result result) {
-		super("error status code is:" + result.status.code + "(status code Please refer to:"
+		super("Exception status code is:" + result.status.code + "(status code Please refer to:"
 				+ result.status.getClass().getCanonicalName() + "),message:"+result.status.getMsg());
 		this.result=result;
 	}

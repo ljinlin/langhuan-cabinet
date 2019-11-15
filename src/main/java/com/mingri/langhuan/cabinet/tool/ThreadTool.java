@@ -3,6 +3,11 @@ package com.mingri.langhuan.cabinet.tool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * 线程工具类
+ * @author ljl
+ *
+ */
 public class ThreadTool {
 	
 	private ThreadTool() {}

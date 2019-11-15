@@ -2,11 +2,8 @@ package com.mingri.langhuan.cabinet.tool;
 
 import java.util.Random;
 import java.util.UUID;
-import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import org.springframework.core.io.ClassPathResource;
 
 public class StrTool {
 
@@ -14,7 +11,7 @@ public class StrTool {
 
 	public static String toString(Object value) {
 		if (value == null) {
-			return "";
+			return EMPTY;
 		}
 		return value.toString();
 
@@ -24,6 +21,13 @@ public class StrTool {
 		return UUID.randomUUID().toString().replace("-", "");
 	}
 
+	/**
+	 * 去除开头和结尾的字符串
+	 * 
+	 * @param charSequence 要处理的字符串
+	 * @param delStr       要去除的字符串
+	 * @return
+	 */
 	public static String delStartAndEnd(CharSequence charSequence, String delStr) {
 		String srcStr = charSequence.toString();
 		if (srcStr.startsWith(delStr)) {
@@ -44,15 +48,15 @@ public class StrTool {
 	 * @return 驼峰字符串
 	 */
 	public static String camel(String str) {
-		// 利用正则删除下划线，把下划线后一位改成大写
+		// 。 利用正则删除下划线，把下划线后一位改成大写
 		Matcher matcher = CAMEL_PATTERN.matcher(str);
 		StringBuffer sb = new StringBuffer(str);
 		if (matcher.find()) {
 			sb = new StringBuffer();
-			// 将当前匹配子串替换为指定字符串，并且将替换后的子串以及其之前到上次匹配子串之后的字符串段添加到一个StringBuffer对象里。
-			// 正则之前的字符和被替换的字符
+			// 。 将当前匹配子串替换为指定字符串，并且将替换后的子串以及其之前到上次匹配子串之后的字符串段添加到一个StringBuffer对象里。
+			// 。 正则之前的字符和被替换的字符
 			matcher.appendReplacement(sb, matcher.group(1).toUpperCase());
-			// 把之后的也添加到StringBuffer对象里
+			// 。 把之后的也添加到StringBuffer对象里
 			matcher.appendTail(sb);
 		} else {
 			return sb.toString();
@@ -76,6 +80,12 @@ public class StrTool {
 		return !isEmpty(str);
 	}
 
+	/**
+	 * 是否是 null、""、" "、"null"
+	 * 
+	 * @param obj 要判断的对象
+	 * @return 布尔值
+	 */
 	public static boolean checkEmpty(Object obj) {
 		if (obj != null) {
 			String str = obj.toString().trim();
@@ -84,6 +94,13 @@ public class StrTool {
 		return true;
 	}
 
+	/**
+	 * 去除第一个和最后一个子字符串： aa11bbc11cc11a,11——> aabbc11cca
+	 * 
+	 * @param src     要处理的字符串
+	 * @param trimStr 子字符串
+	 * @return
+	 */
 	public static String trimStr(String src, String trimStr) {
 		if (src.indexOf(trimStr) == 0) {
 			src = src.replaceFirst(trimStr, "");
@@ -99,10 +116,22 @@ public class StrTool {
 		return !checkEmpty(obj);
 	}
 
+	/**
+	 * 获取后缀名：aaa.txt——> .txt
+	 * 
+	 * @param str 字符串
+	 * @return 返回后缀名
+	 */
 	public static String getSuffix(String str) {
 		return str.substring(str.lastIndexOf("."));
 	}
 
+	/**
+	 * 获取前缀 aaa.txt——> aaa
+	 * 
+	 * @param str 字符串
+	 * @return 返回前缀子字符串
+	 */
 	public static String getPrefix(String str) {
 		return str.substring(0, str.lastIndexOf("."));
 	}

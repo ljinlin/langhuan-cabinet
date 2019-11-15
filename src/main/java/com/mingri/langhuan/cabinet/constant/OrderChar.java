@@ -2,18 +2,12 @@ package com.mingri.langhuan.cabinet.constant;
 
 /**
  * 
- * @author  ljl
+ * @author ljl
  *
- * Mar 14, 2019
+ *         Mar 14, 2019
  */
-public  enum OrderChar {
-	
-DESC("DESC"),
-ASC("ASC");
+public enum OrderChar {
 
-public final String code;
+	DESC, ASC;
 
-OrderChar(String code) {
-	this.code = code;
-}
 }
