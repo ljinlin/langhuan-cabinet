@@ -111,7 +111,19 @@ public class ClassTool {
 		return false;
 	}
 
-	
+	/**
+	 * 反射取值
+	 * 
+	 * @param srcObj 反射的对象
+	 * @param field  反射的字段
+	 * @return  字段值
+	 * @throws IllegalArgumentException
+	 * @throws IllegalAccessException
+	 */
+	public static Object reflexVal(Object obj,  Field field) throws IllegalArgumentException, IllegalAccessException{
+		field.setAccessible(true);
+		return field.get(obj);
+	}
 	
 
 	
