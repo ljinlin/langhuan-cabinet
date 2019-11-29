@@ -4,6 +4,8 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -35,6 +37,23 @@ public class DateTool {
 	public static final DateTimeFormatter yMdHm_FMTS = DateTimeFormatter.ofPattern(yMdHm);
 	public static final DateTimeFormatter yMdH_FMTS = DateTimeFormatter.ofPattern(yMdH);
 	
+	
+
+	/**
+	 * 是否同一天
+	 * 
+	 * @param date1 日期1
+	 * @param date2 日期2
+	 * @return
+	 */
+	public static boolean isSameDay(Date date1, Date date2) {
+		Calendar cal1 = Calendar.getInstance();
+		cal1.setTime(date1);
+		Calendar cal2 = Calendar.getInstance();
+		cal2.setTime(date1);
+		return cal1.get(Calendar.ERA) == cal2.get(0) && cal1.get(Calendar.ERA) == cal2.get(Calendar.YEAR)
+				&& cal1.get(Calendar.DAY_OF_YEAR) == cal2.get(Calendar.DAY_OF_YEAR);
+	}
 
 	
 }

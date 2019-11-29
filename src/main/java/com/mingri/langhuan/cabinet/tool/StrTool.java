@@ -63,6 +63,7 @@ public class StrTool {
 		}
 		return camel(sb.toString());
 	}
+	
 
 	public static boolean isBlank(String str) {
 		return (str + "").length() == 0;
@@ -72,12 +73,12 @@ public class StrTool {
 		return !isBlank(str);
 	}
 
-	public static boolean isEmpty(String str) {
-		return (str == null || str.length() == 0);
+	public static boolean isEmpty(CharSequence charSequence) {
+		return (charSequence == null || charSequence.length() == 0);
 	}
 
-	public static boolean isNotEmpty(String str) {
-		return !isEmpty(str);
+	public static boolean isNotEmpty(CharSequence charSequence) {
+		return !isEmpty(charSequence);
 	}
 
 	/**
@@ -95,22 +96,27 @@ public class StrTool {
 	}
 
 	/**
-	 * 去除第一个和最后一个子字符串： aa11bbc11cc11a,11——> aabbc11cca
+	 * 去除第一个和最后一个子字符串： aa11bbc11cc11a,11——> bbc11cc
 	 * 
 	 * @param src     要处理的字符串
 	 * @param trimStr 子字符串
 	 * @return
 	 */
 	public static String trimStr(String src, String trimStr) {
-		if (src.indexOf(trimStr) == 0) {
-			src = src.replaceFirst(trimStr, "");
+		int index=src.indexOf(trimStr);
+		int len=src.length();
+		int trimStrLen=trimStr.length();
+		if (index > -1) {
+			src = src.substring(index+trimStrLen, len-1);
 		}
-		int len = src.length() - trimStr.length();
-		if (src.lastIndexOf(trimStr) == len) {
-			src = src.substring(0, len);
+		index=src.lastIndexOf(trimStr);
+		len=src.length();
+		if (src.lastIndexOf(trimStr) >-1) {
+			src = src.substring(0,index);
 		}
 		return src;
 	}
+
 
 	public static boolean checkNotEmpty(Object obj) {
 		return !checkEmpty(obj);

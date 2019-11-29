@@ -13,6 +13,7 @@ import java.util.function.Function;
 
 import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
 import com.googlecode.concurrentlinkedhashmap.Weighers;
+import com.mingri.langhuan.cabinet.tool.StrTool;
 import com.mingri.langhuan.cabinet.tool.ThreadTool;
 
 /**
@@ -26,13 +27,14 @@ public class LocalCache implements ICache {
 	private LocalCache() {
 	}
 
-	private static class InstanceHolder{
-		static final LocalCache INSTANCE=new LocalCache();
+	private static class InstanceHolder {
+		static final LocalCache INSTANCE = new LocalCache();
 	}
+
 	public static LocalCache instance() {
 		return InstanceHolder.INSTANCE;
 	}
-	
+
 	/**
 	 * 存储最大数据数量，超出该数据量时，删除旧的数据
 	 */
@@ -41,20 +43,19 @@ public class LocalCache implements ICache {
 	/**
 	 * 缓存容器
 	 */
-	private static final Map<String, Object> CONTAINER =new ConcurrentLinkedHashMap.Builder<String, Object>()
-			.maximumWeightedCapacity(MAXCOUNT). weigher(Weighers.singleton()).initialCapacity(100).build();
+	private static final Map<String, Object> CONTAINER = new ConcurrentLinkedHashMap.Builder<String, Object>()
+			.maximumWeightedCapacity(MAXCOUNT).weigher(Weighers.singleton()).initialCapacity(100).build();
 
 	/**
 	 * 缓存KEY 存储时间记录
 	 */
 	private static final Map<String, Long> KEY_TIME_CONTAINER = new ConcurrentLinkedHashMap.Builder<String, Long>()
-			.maximumWeightedCapacity(MAXCOUNT). weigher(Weighers.singleton()).initialCapacity(100).build();
-	
+			.maximumWeightedCapacity(MAXCOUNT).weigher(Weighers.singleton()).initialCapacity(100).build();
+
 	/**
 	 * 时间格式化对象
 	 */
 	public static final DateTimeFormatter yyyyMMddHHmmss_FMT = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
-
 
 	/**
 	 * 清理缓存线程,防止频繁的缓存清理 创建线程消耗性能
@@ -71,26 +72,23 @@ public class LocalCache implements ICache {
 	 */
 	private static final int TRIM_INTERIM = 2000;
 
-
 	@SuppressWarnings("unchecked")
 	@Override
 	public void rightPush(String key, Object value, int timeOutSecond) {
-		ConcurrentLinkedDeque<Object> linkList = (ConcurrentLinkedDeque<Object>) CONTAINER.get(key);
+		ConcurrentLinkedDeque<Object> linkList = (ConcurrentLinkedDeque<Object>) getOfContainer(key);
 		if (linkList == null) {
 			linkList = new ConcurrentLinkedDeque<>();
 			CONTAINER.put(key, linkList);
 		}
-		KEY_TIME_CONTAINER.put(key,
-				Long.parseLong(LocalDateTime.now().plusSeconds(timeOutSecond).format(yyyyMMddHHmmss_FMT)));
+		KEY_TIME_CONTAINER.put(key, cmpTimeOutSecond(timeOutSecond));
 		linkList.offer(value);
 		LocalCache.streamContainer();
 	}
 
-
 	@SuppressWarnings("unchecked")
 	@Override
 	public void rightPush(String key, Object value) {
-		ConcurrentLinkedDeque<Object> linkList = (ConcurrentLinkedDeque<Object>) CONTAINER.get(key);
+		ConcurrentLinkedDeque<Object> linkList = (ConcurrentLinkedDeque<Object>) getOfContainer(key);
 		if (linkList == null) {
 			linkList = new ConcurrentLinkedDeque<>();
 			CONTAINER.putIfAbsent(key, linkList);
@@ -99,11 +97,10 @@ public class LocalCache implements ICache {
 		LocalCache.streamContainer();
 	}
 
-
 	@SuppressWarnings("unchecked")
 	@Override
 	public void leftPush(String key, Object value) {
-		ConcurrentLinkedDeque<Object> linkList = (ConcurrentLinkedDeque<Object>) CONTAINER.get(key);
+		ConcurrentLinkedDeque<Object> linkList = (ConcurrentLinkedDeque<Object>) getOfContainer(key);
 		if (linkList == null) {
 			linkList = new ConcurrentLinkedDeque<>();
 			CONTAINER.putIfAbsent(key, linkList);
@@ -112,79 +109,66 @@ public class LocalCache implements ICache {
 		LocalCache.streamContainer();
 	}
 
-
 	@SuppressWarnings("unchecked")
 	@Override
 	public <T> T rightPop(String key) {
-		ConcurrentLinkedDeque<Object> linkList = (ConcurrentLinkedDeque<Object>) CONTAINER.get(key);
+		ConcurrentLinkedDeque<Object> linkList = (ConcurrentLinkedDeque<Object>) getOfContainer(key);
 		if (linkList == null) {
 			return null;
 		}
 		return (T) linkList.pollLast();
 	}
 
-
 	@SuppressWarnings("unchecked")
 	@Override
 	public <T> T leftPop(String key) {
-		ConcurrentLinkedDeque<Object> linkList = (ConcurrentLinkedDeque<Object>) CONTAINER.get(key);
+		ConcurrentLinkedDeque<Object> linkList = (ConcurrentLinkedDeque<Object>) getOfContainer(key);
 		if (linkList == null) {
 			return null;
 		}
 		return (T) linkList.pollFirst();
 	}
 
-	
-
 	@SuppressWarnings("unchecked")
 	@Override
-	public <T>T computeIfAbsent(String key, int timeOutSecond, Function<String, Object> mappingFunction) {
-		T t=(T) CONTAINER.computeIfAbsent(key, mappingFunction);
-		KEY_TIME_CONTAINER.putIfAbsent(key,
-				Long.parseLong(LocalDateTime.now().plusSeconds(timeOutSecond).format(yyyyMMddHHmmss_FMT)));
+	public <T> T computeIfAbsent(String key, int timeOutSecond, Function<String, Object> mappingFunction) {
+		T t = (T) computeIfAbsent(key, timeOutSecond, mappingFunction);
+		KEY_TIME_CONTAINER.putIfAbsent(key, cmpTimeOutSecond(timeOutSecond));
 		LocalCache.streamContainer();
 		return t;
 	}
 
 	@Override
 	public void put(String key, Object value) {
-		CONTAINER.put(key, value);
+		putToContainer(key, value);
 	}
-
 
 	@Override
 	public void put(String key, Object value, int timeOutSecond) {
-		CONTAINER.put(key, value);
-		KEY_TIME_CONTAINER.put(key,
-				Long.parseLong(LocalDateTime.now().plusSeconds(timeOutSecond).format(yyyyMMddHHmmss_FMT)));
+		putIfAbsentToContainer(key, value);
+		KEY_TIME_CONTAINER.put(key, cmpTimeOutSecond(timeOutSecond));
 		LocalCache.streamContainer();
 	}
-
 
 	@Override
 	public boolean putIfAbsent(String key, Object value) {
-		Object result = null;
-		result = CONTAINER.putIfAbsent(key, value);
+		Object result = putIfAbsentToContainer(key, value);
 		LocalCache.streamContainer();
 		return result == null;
 	}
-
 
 	@Override
 	public boolean putIfAbsent(String key, Object value, int timeOutSecond) {
-		Object result = null;
-		result = CONTAINER.putIfAbsent(key, value);
-		KEY_TIME_CONTAINER.putIfAbsent(key,
-				Long.parseLong(LocalDateTime.now().plusSeconds(timeOutSecond).format(yyyyMMddHHmmss_FMT)));
+		Object result = putIfAbsentToContainer(key, value);
+		KEY_TIME_CONTAINER.putIfAbsent(key, cmpTimeOutSecond(timeOutSecond));
 		LocalCache.streamContainer();
 		return result == null;
 	}
-
 
 	@SuppressWarnings("unchecked")
 	@Override
 	public <T> T get(String key) {
-		T value = (T) CONTAINER.get(key);
+		T value = (T) getOfContainer(key);
 		if (value == null) {
 			return null;
 		}
@@ -197,30 +181,27 @@ public class LocalCache implements ICache {
 		}
 	}
 
-
 	@Override
 	public void expire(String key, int timeOutSecond) {
-		KEY_TIME_CONTAINER.put(key,
-				Long.parseLong(LocalDateTime.now().plusSeconds(timeOutSecond).format(yyyyMMddHHmmss_FMT)));
+		if (KEY_TIME_CONTAINER.containsKey(key)) {
+			KEY_TIME_CONTAINER.put(key, cmpTimeOutSecond(timeOutSecond));
+		}
 	}
-
 
 	@Override
 	public boolean hasKey(String key) {
-		return CONTAINER.containsKey(key);
+		return hasKeyOfContainer(key);
 	}
-
 
 	@Override
 	public void remove(String key) {
-		CONTAINER.remove(key);
+		removeOfContainer(key);
 	}
-
 
 	@SuppressWarnings("unchecked")
 	@Override
 	public <T> T removeAndGet(String key) {
-		return (T) CONTAINER.remove(key);
+		return (T) removeOfContainer(key);
 	}
 
 	/**
@@ -238,15 +219,7 @@ public class LocalCache implements ICache {
 				/*
 				 * 1、超时缓存清除
 				 */
-				Iterator<Entry<String, Object>> instanceIt = CONTAINER.entrySet().iterator();
-				while (instanceIt.hasNext()) {
-					String key = instanceIt.next().getKey();
-					if (LocalCache.isTimeOut(key, now)) {
-						instanceIt.remove();
-						KEY_TIME_CONTAINER.remove(key);
-					}
-				}
-
+				clearTimeoutData(CONTAINER.entrySet().iterator(), now);
 //				/*
 //				 * 2、 超容量,从首位开始清除
 //				 */
@@ -265,7 +238,7 @@ public class LocalCache implements ICache {
 //				}
 
 				ThreadTool.sleep(TRIM_INTERIM);
-				now = Long.valueOf(LocalDateTime.now().format(yyyyMMddHHmmss_FMT));
+				now = cmpTimeOutSecond(0);
 			} while (!CONTAINER.isEmpty());
 			TREAM_CACHE_LOCK.set(0);
 		});
@@ -293,5 +266,74 @@ public class LocalCache implements ICache {
 	private static boolean isTimeOut(String key, long now) {
 		Long saveTime = KEY_TIME_CONTAINER.get(key);
 		return saveTime == null || saveTime < now;
+	}
+
+	public static final String NULL_VALUE = StrTool.getUUId();
+
+	private Object getOfContainer(String key) {
+		Object value = CONTAINER.get(key);
+		return value == NULL_VALUE ? null : value;
+	}
+
+	private Object putToContainer(String key, Object value) {
+		if (value == null) {
+			CONTAINER.put(key, NULL_VALUE);
+			return null;
+		} else {
+			CONTAINER.put(key, value);
+			return value;
+		}
+	}
+
+	private Object putIfAbsentToContainer(String key, Object value) {
+		if (value == null) {
+			CONTAINER.putIfAbsent(key, NULL_VALUE);
+			return null;
+		} else {
+			CONTAINER.putIfAbsent(key, value);
+			return value;
+		}
+	}
+
+	private boolean hasKeyOfContainer(String key) {
+		return CONTAINER.containsKey(key);
+	}
+
+	private Object removeOfContainer(String key) {
+		Object value = CONTAINER.remove(key);
+		if (value == null) {
+			KEY_TIME_CONTAINER.remove(key);
+		}
+		value = value == NULL_VALUE ? null : value;
+		return value;
+	}
+
+	private Object putToContainer(String key, Function<String, Object> mappingFunction) {
+		Object value = mappingFunction.apply(key);
+		if (value == null) {
+			CONTAINER.put(key, NULL_VALUE);
+			return null;
+		} else {
+			CONTAINER.put(key, value);
+			return value;
+		}
+	}
+
+	private static void clearTimeoutData(Iterator<Entry<String, Object>> instanceIt, long now) {
+		while (instanceIt.hasNext()) {
+			String key = instanceIt.next().getKey();
+			if (LocalCache.isTimeOut(key, now)) {
+				instanceIt.remove();
+				KEY_TIME_CONTAINER.remove(key);
+			}
+		}
+	}
+
+	private static long cmpTimeOutSecond(int timeOutSecond) {
+		LocalDateTime dt = LocalDateTime.now();
+		if (timeOutSecond != 0) {
+			dt = dt.plusSeconds(timeOutSecond);
+		}
+		return Long.parseLong(dt.format(yyyyMMddHHmmss_FMT));
 	}
 }

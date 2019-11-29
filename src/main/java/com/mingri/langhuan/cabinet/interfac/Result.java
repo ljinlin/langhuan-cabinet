@@ -45,7 +45,10 @@ public class Result implements Serializable {
 		this.data = data;
 	}
 
-
+	public Result(ResultStatus status) {
+		this.status = status;
+	}
+	
 	/**
 	 * 自定义状态
 	 * 

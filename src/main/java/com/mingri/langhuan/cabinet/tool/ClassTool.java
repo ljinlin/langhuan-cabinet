@@ -125,7 +125,26 @@ public class ClassTool {
 		return field.get(obj);
 	}
 	
-
+	/**
+	 * 获取非私有、非静态的字段(包含（非Object）父类的)
+	 * 
+	 * @param clazz
+	 * @param fieldName
+	 * @return
+	 */
+	public static Field searchDecararedField(Class<?> clazz, String fieldName) {
+		Class<?> nextClass = clazz;
+		while (nextClass != null && nextClass != Object.class) {
+			Field[] fary = nextClass.getDeclaredFields();
+			for (Field f : fary) {
+				if (f.getName().equals(fieldName)) {
+					return f;
+				}
+			}
+			nextClass = nextClass.getSuperclass();
+		}
+		return null;
+	}
 	
 
 }

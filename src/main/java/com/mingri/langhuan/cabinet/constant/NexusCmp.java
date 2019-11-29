@@ -8,21 +8,21 @@ package com.mingri.langhuan.cabinet.constant;
  */
 public enum NexusCmp {
 	
-	eq("="),
-	gt(">"),
-	lt("<"),
-	gt_eq(">="),
-	lt_eq("<="),
-	lt_gt("<>"),
-	no_eq("!="),
-	in("in"),
-	not_in("not in"),
-	is("is"),
-	is_not("is not"),
-	like("like"),
-	like_l("like"),
-	like_r("like"),
-	like_lr("like");
+	EQ("="),
+	GT(">"),
+	LT("<"),
+	GT_EQ(">="),
+	LT_EQ("<="),
+	LT_GT("<>"),
+	NO_EQ("!="),
+	IN("in"),
+	NOT_IN("not in"),
+	IS("is"),
+	IS_NOT("is not"),
+	LIKE("like"),
+	LIKE_L("like"),
+	LIKE_R("like"),
+	LIKE_LR("like");
 
 	public final String code;
 
