@@ -1,4 +1,4 @@
-package com.mingri.langhuan.cabinet.cache;
+package com.mingri.langhuan.cabinet.container.cache;
 
 import java.util.function.Supplier;
 
@@ -19,7 +19,7 @@ public class MultilevelCache {
 	private MultilevelCache() {
 	}
 
-	private static ICache FIRST_LEVE_LCACHE = null;
+	private static ICache FIRST_LEVE_LCACHE = LocalCache.instance();
 	private static ICache SECOND_CACHE;
 
 	private static final String LOCK_PREFIX = "MUILCACHE_LOCK:";
@@ -34,7 +34,7 @@ public class MultilevelCache {
 		if (MultilevelCache.FIRST_LEVE_LCACHE == null && MultilevelCache.SECOND_CACHE == null) {
 			MultilevelCache.FIRST_LEVE_LCACHE = firstCache;
 			MultilevelCache.SECOND_CACHE = secondCache;
-			LOGGER.info("开启二级缓存，SECOND_CACHE：{}", secondCache);
+			LOGGER.info("开启二级缓存，SECOND_CACHE：", secondCache);
 		}
 	}
 
@@ -48,7 +48,7 @@ public class MultilevelCache {
 		if (MultilevelCache.SECOND_CACHE == null) {
 			MultilevelCache.FIRST_LEVE_LCACHE = LocalCache.instance();
 			MultilevelCache.SECOND_CACHE = secondCache;
-			LOGGER.info("开启二级缓存，SECOND_CACHE：{}", SECOND_CACHE);
+			LOGGER.info("开启二级缓存，SECOND_CACHE：", SECOND_CACHE);
 		}
 	}
 
@@ -167,6 +167,14 @@ public class MultilevelCache {
 		if (SECOND_CACHE != null) {
 			SECOND_CACHE.expire(key, timeOutSecond);
 		}
+	}
+
+	public static boolean hashKey(String key) {
+		boolean flag = FIRST_LEVE_LCACHE.hasKey(key);
+		if (!flag) {
+			flag = SECOND_CACHE.hasKey(key);
+		}
+		return flag;
 	}
 
 	private static int cmpFirstCacheTimeOutSecond(int timeOutSecond) {

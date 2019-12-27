@@ -1,4 +1,4 @@
-package com.mingri.langhuan.cabinet.cache;
+package com.mingri.langhuan.cabinet.container.cache;
 
 import java.util.function.Function;
 
@@ -54,7 +54,7 @@ public interface ICache {
 	 * @param mappingFunction  缓存提供者
 	 * @return 返回保存的对象
 	 */
-	public <T> T computeIfAbsent(String key, int timeOutSecond, Function<String, Object> mappingFunction);
+	public <T> T computeIfAbsent(String key, int timeOutSecond, Function<String, T> mappingFunction);
 
 	void put(String key, Object value);
 

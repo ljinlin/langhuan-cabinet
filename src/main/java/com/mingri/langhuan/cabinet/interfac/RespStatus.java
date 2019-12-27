@@ -17,7 +17,7 @@ import com.mingri.langhuan.cabinet.constant.OperStatusEnum;
  * @author ljl
  *
  */
-public class ResultStatus implements Serializable {
+public class RespStatus implements Serializable {
 
 	/**
 	 * 
@@ -34,7 +34,7 @@ public class ResultStatus implements Serializable {
 	 */
 	private String msg;
 
-	public ResultStatus(String code, String msg) {
+	public RespStatus(String code, String msg) {
 		this.code = code;
 		this.msg = msg;
 	}
@@ -42,31 +42,31 @@ public class ResultStatus implements Serializable {
 	/**
 	 * 成功的状态
 	 */
-	public static final ResultStatus SUCCESS = new ResultStatus(OperStatusEnum.SUCCESS.code,
+	public static final RespStatus SUCCESS = new RespStatus(OperStatusEnum.SUCCESS.code,
 			OperStatusEnum.SUCCESS.msg);
 
 	/**
 	 * 参数异常的状态
 	 */
-	public static final ResultStatus PARAM_ERROR = new ResultStatus(OperStatusEnum.PARAM_ERROR.code,
+	public static final RespStatus PARAM_ERROR = new RespStatus(OperStatusEnum.PARAM_ERROR.code,
 			OperStatusEnum.PARAM_ERROR.msg);
 
 	/**
 	 * 系统异常的状态
 	 */
-	public static final ResultStatus SYS_ERROR = new ResultStatus(OperStatusEnum.SYS_ERROR.code,
+	public static final RespStatus SYS_ERROR = new RespStatus(OperStatusEnum.SYS_ERROR.code,
 			OperStatusEnum.SYS_ERROR.msg);
 
 	/**
 	 * 半成功的状态
 	 */
-	public static final ResultStatus IMPERFECT = new ResultStatus(OperStatusEnum.IMPERFECT.code,
+	public static final RespStatus IMPERFECT = new RespStatus(OperStatusEnum.IMPERFECT.code,
 			OperStatusEnum.IMPERFECT.msg);
 
 	/**
 	 * 警告（未成功，有错误，但是已经故障转移或已处理错误）的状态
 	 */
-	public static final ResultStatus WARNING = new ResultStatus(OperStatusEnum.WARNING.code,
+	public static final RespStatus WARNING = new RespStatus(OperStatusEnum.WARNING.code,
 			OperStatusEnum.WARNING.msg);
 
 	public String getMsg() {

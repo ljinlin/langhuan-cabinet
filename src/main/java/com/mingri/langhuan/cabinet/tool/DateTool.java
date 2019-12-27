@@ -2,12 +2,13 @@ package com.mingri.langhuan.cabinet.tool;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class DateTool {
 	
@@ -55,5 +56,17 @@ public class DateTool {
 				&& cal1.get(Calendar.DAY_OF_YEAR) == cal2.get(Calendar.DAY_OF_YEAR);
 	}
 
+	
+	public static LocalDateTime dateToLocalDateTime(Date date) {
+		Instant instant = date.toInstant();
+		ZoneId zone = ZoneId.systemDefault();
+		return LocalDateTime.ofInstant(instant, zone);
+	}
+
+	public static Date localDateTimeToDate(LocalDateTime localDateTime) {
+		ZoneId zoneId = ZoneId.systemDefault();
+		ZonedDateTime zdt = localDateTime.atZone(zoneId);
+		return Date.from(zdt.toInstant());
+	}
 	
 }

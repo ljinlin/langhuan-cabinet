@@ -1,7 +1,5 @@
 package com.mingri.langhuan.cabinet.tool;
 
-import java.util.Date;
-
 import com.mingri.langhuan.cabinet.constant.ComparaResultEnum;
 
 /**
@@ -64,7 +62,6 @@ public class MyComparable<T> {
 	 * @return 对比结果枚举
 	 */
 	private ComparaResultEnum compareTo(T o) {
-		MyComparable.creat(new Date());
 		int result = this.instance.compareTo(o);
 		if (result > 0) {
 			return ComparaResultEnum.GT;

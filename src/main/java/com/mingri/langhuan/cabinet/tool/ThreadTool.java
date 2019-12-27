@@ -18,16 +18,16 @@ public class ThreadTool {
 		try {
 			Thread.sleep(millis);
 		} catch (InterruptedException e) {
-			LOGGER.error("线程异常中断，Interrupted!异常信息:{}", e);
+			LOGGER.error("线程异常中断，Interrupted!异常信息:", e);
 			Thread.currentThread().interrupt();
 		}
 	}
 	
 	public static Object buildLock(String lockId) {
-		StringBuilder sb = new StringBuilder(lockId);
-		return sb.toString().intern();
+		return lockId.intern();
 	}
-	public static Object buildLock(String lockPrefix,String lockId) {
+	
+	public static String buildLock(String lockPrefix,String lockId) {
 		StringBuilder sb = new StringBuilder();
 		sb.append(lockPrefix);
 		sb.append(lockId);

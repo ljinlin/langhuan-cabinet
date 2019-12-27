@@ -5,9 +5,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.mingri.langhuan.cabinet.tool.DateTool;
 
 /**
@@ -19,21 +16,10 @@ import com.mingri.langhuan.cabinet.tool.DateTool;
  * @author ljl
  */
 public class SequenceGenerate {
-	  private static final Logger LOGGER = LoggerFactory.getLogger(SequenceGenerate.class);
-	public SequenceGenerate() {
-		if (!SEQUENCE_MAP.isEmpty()) {
-			throw new RuntimeException("必须在使用前配置");
-		}
-		if (CONFIG_FLAG) {
-			throw new RuntimeException("已经配置过了");
-		}
-		CONFIG_FLAG = true;
-		LOGGER.info(
-				"=============================================序列生成器已启动，应用编号：" + APP_NO + "   支持每秒并发量:" + (MAX_NO - 1));
-	}
 
 	/**
 	 * 设置最高并发量/每秒
+	 * 
 	 * @param cps 最高并发量/每秒
 	 */
 	public void setCps(Integer cps) {
@@ -42,11 +28,6 @@ public class SequenceGenerate {
 		}
 	}
 
-
-	/**
-	 * 配置标记
-	 */
-	private static boolean CONFIG_FLAG = false;
 	/**
 	 * 每秒最高并发量
 	 */
@@ -56,10 +37,12 @@ public class SequenceGenerate {
 	 * 应用编号
 	 */
 	private static String APP_NO = "0";
+
 	/**
 	 * 开始序号
 	 */
 	private static byte START_NUM = 0;
+
 	private static final Map<String, AtomicInteger> SEQUENCE_MAP = new HashMap<String, AtomicInteger>();
 
 	/**
@@ -83,13 +66,9 @@ public class SequenceGenerate {
 	 * @param appNo 默认值0，应用编号
 	 */
 	public synchronized static void initConfiguraion(int cps, String appNo) {
-		if (!SEQUENCE_MAP.isEmpty() ) {
-			throw new RuntimeException("已经初始化配置，不能再配置");
-		}
 		MAX_NO = cps + 1;
 		APP_NO = appNo;
 	}
-
 
 	private static String getSecond() {
 		return DateTool.yyMdHms_FMTS.format(LocalDateTime.now());
@@ -97,15 +76,17 @@ public class SequenceGenerate {
 
 	/**
 	 * 不够序号的长度补0
-	 * @param srcNum  要补0的数字
-	 * @param max  小于该数字要补0
+	 * 
+	 * @param srcNum 要补0的数字
+	 * @param max    小于该数字要补0
 	 */
-	private static String fill0(int srcNum,int max) {
-		String strSrc = String.valueOf(srcNum);
-		while (strSrc.length() < (max+"").length()) {
-			strSrc = "0" + strSrc;
+	private static String fill0(int srcNum, int len) {
+		StringBuilder strSrc = new StringBuilder();
+		strSrc.append(srcNum);
+		while (strSrc.length() < len - 1) {
+			strSrc.insert(0, "0");
 		}
-		return strSrc;
+		return strSrc.toString();
 	}
 
 	/**
@@ -119,6 +100,7 @@ public class SequenceGenerate {
 
 	/**
 	 * 将序列号格式化成LocalDateTime对象
+	 * 
 	 * @param id 要格式化的序列号
 	 * @return 返回格式化的LocalDateTime
 	 */
@@ -132,16 +114,6 @@ public class SequenceGenerate {
 
 		LocalDateTime ldt = LocalDateTime.of(year, month, day, hour, minute, second);
 		return ldt;
-	}
-
-	/**
-	 * 时间标记的序列，因为目前的实现本来就是时间标记的序列，若今后扩展，那么 nexId 返回的将不一定是时间标记的序列
-	 * 
-	 * @param sequenceKey 序列key，自定义一个key，每次获取都会在对应的key首次获取序列值的基础上递增
-	 * @return 返回下一个时间戳序列号
-	 */
-	public static String nexIdForTimeStamp(String sequenceKey) {
-		return nexId(sequenceKey, SequenceGenerate.MAX_NO);
 	}
 
 	/**
@@ -163,21 +135,21 @@ public class SequenceGenerate {
 		}
 		int no = sequence.incrementAndGet();
 		String strNo = null;
+		int len = (cps + "").length();
 		if (no < cps) {
-			strNo = SequenceGenerate.fill0(no,cps);
+			strNo = SequenceGenerate.fill0(no, len);
 		} else {
 			synchronized (SEQUENCE_MAP) {
 				no = sequence.incrementAndGet();
 				if (no < cps) {
-					strNo = SequenceGenerate.fill0(no,cps);
+					strNo = SequenceGenerate.fill0(no, len);
 				} else {
 					sequence.set(START_NUM);
 					no = sequence.incrementAndGet();
-					strNo = SequenceGenerate.fill0(no,cps);
+					strNo = SequenceGenerate.fill0(no, len);
 				}
 			}
 		}
-		return SequenceGenerate.getSecond().concat(APP_NO).concat(strNo);
+		return SequenceGenerate.getSecond().concat(strNo).concat(APP_NO);
 	}
-
 }

@@ -6,11 +6,8 @@ import javax.crypto.Cipher;
 import javax.crypto.spec.SecretKeySpec;
 
 import org.apache.xmlbeans.impl.util.Base64;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class PWDTool {
-    private static final Logger LOGGER = LoggerFactory.getLogger(PWDTool.class);
 	private PWDTool () {}
 	
 	private static final char[] HEX_DIGITS = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e',
@@ -56,9 +53,8 @@ public class PWDTool {
 			MessageDigest md = MessageDigest.getInstance("MD5");
 			return byteArrayToHexString(md.digest(resultString.getBytes()));
 		} catch (Exception ex) {
-			LOGGER.error("",ex);
+			throw new IllegalArgumentException("加密失败："+origin);
 		}
-		return resultString;
 	}
 	
 	/**
@@ -76,8 +72,8 @@ public class PWDTool {
 					.doFinal(origin.getBytes()));
 			return new String(encryptedString, "UTF-8");
 		} catch (Exception e) {
+			throw new IllegalArgumentException("加密失败："+origin);
 		}
-		return null;
 
 	}
 
@@ -96,8 +92,8 @@ public class PWDTool {
 					.decode(cipherStr.getBytes("UTF-8"))));
 			return decryptedString;
 		} catch (Exception e) {
-
+			throw new IllegalArgumentException("解密失败："+cipherStr);
 		}
-		return null;
 	}
+
 }

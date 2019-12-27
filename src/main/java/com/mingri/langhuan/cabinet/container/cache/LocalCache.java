@@ -1,4 +1,4 @@
-package com.mingri.langhuan.cabinet.cache;
+package com.mingri.langhuan.cabinet.container.cache;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -17,7 +17,7 @@ import com.mingri.langhuan.cabinet.tool.StrTool;
 import com.mingri.langhuan.cabinet.tool.ThreadTool;
 
 /**
- * 本地缓存
+ * JVM缓存，默认最多存储2000个数据，冲过2000个，lru策略淘汰
  * 
  * @author ljl
  *
@@ -129,10 +129,9 @@ public class LocalCache implements ICache {
 		return (T) linkList.pollFirst();
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
-	public <T> T computeIfAbsent(String key, int timeOutSecond, Function<String, Object> mappingFunction) {
-		T t = (T) computeIfAbsent(key, timeOutSecond, mappingFunction);
+	public <T> T computeIfAbsent(String key, int timeOutSecond, Function<String, T> mappingFunction) {
+		T t = computeToContainer(key, mappingFunction);
 		KEY_TIME_CONTAINER.putIfAbsent(key, cmpTimeOutSecond(timeOutSecond));
 		LocalCache.streamContainer();
 		return t;
@@ -145,7 +144,7 @@ public class LocalCache implements ICache {
 
 	@Override
 	public void put(String key, Object value, int timeOutSecond) {
-		putIfAbsentToContainer(key, value);
+		putToContainer(key, value);
 		KEY_TIME_CONTAINER.put(key, cmpTimeOutSecond(timeOutSecond));
 		LocalCache.streamContainer();
 	}
@@ -220,23 +219,6 @@ public class LocalCache implements ICache {
 				 * 1、超时缓存清除
 				 */
 				clearTimeoutData(CONTAINER.entrySet().iterator(), now);
-//				/*
-//				 * 2、 超容量,从首位开始清除
-//				 */
-//				if (CONTAINER.size() > MAXCOUNT) {
-//					List<String> tempList = new ArrayList<>();
-//					for (Entry<String, Object> en : CONTAINER.entrySet()) {
-//						tempList.add(en.getKey());
-//						if (CONTAINER.size() - tempList.size() <= MAXCOUNT) {
-//							tempList.forEach(e -> {
-//								CONTAINER.remove(e);
-//								KEY_TIME_CONTAINER.remove(e);
-//							});
-//							break;
-//						}
-//					}
-//				}
-
 				ThreadTool.sleep(TRIM_INTERIM);
 				now = cmpTimeOutSecond(0);
 			} while (!CONTAINER.isEmpty());
@@ -308,15 +290,10 @@ public class LocalCache implements ICache {
 		return value;
 	}
 
-	private Object putToContainer(String key, Function<String, Object> mappingFunction) {
-		Object value = mappingFunction.apply(key);
-		if (value == null) {
-			CONTAINER.put(key, NULL_VALUE);
-			return null;
-		} else {
-			CONTAINER.put(key, value);
-			return value;
-		}
+	private <T> T computeToContainer(String key, Function<String, T> mappingFunction) {
+		T value = mappingFunction.apply(key);
+		putToContainer(key, value);
+		return value;
 	}
 
 	private static void clearTimeoutData(Iterator<Entry<String, Object>> instanceIt, long now) {

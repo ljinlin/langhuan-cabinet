@@ -5,6 +5,8 @@ import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.mingri.langhuan.cabinet.constant.CharTag;
+
 public class StrTool {
 
 	public static final String EMPTY = "";
@@ -21,23 +23,6 @@ public class StrTool {
 		return UUID.randomUUID().toString().replace("-", "");
 	}
 
-	/**
-	 * 去除开头和结尾的字符串
-	 * 
-	 * @param charSequence 要处理的字符串
-	 * @param delStr       要去除的字符串
-	 * @return
-	 */
-	public static String delStartAndEnd(CharSequence charSequence, String delStr) {
-		String srcStr = charSequence.toString();
-		if (srcStr.startsWith(delStr)) {
-			srcStr = srcStr.substring(delStr.length());
-		}
-		if (srcStr.endsWith(delStr)) {
-			srcStr = srcStr.substring(0, srcStr.length() - delStr.length());
-		}
-		return srcStr;
-	}
 
 	public static final Pattern CAMEL_PATTERN = Pattern.compile("_(\\w)");
 
@@ -63,7 +48,6 @@ public class StrTool {
 		}
 		return camel(sb.toString());
 	}
-	
 
 	public static boolean isBlank(String str) {
 		return (str + "").length() == 0;
@@ -95,28 +79,39 @@ public class StrTool {
 		return true;
 	}
 
+	
+	
 	/**
-	 * 去除第一个和最后一个子字符串： aa11bbc11cc11a,11——> bbc11cc
 	 * 
-	 * @param src     要处理的字符串
-	 * @param trimStr 子字符串
+	 * 去除开头和结尾的字符串
+	 * 
+	 * @param charSequence 要处理的字符串
+	 * @param delStr       要去除的字符串
 	 * @return
 	 */
-	public static String trimStr(String src, String trimStr) {
-		int index=src.indexOf(trimStr);
-		int len=src.length();
-		int trimStrLen=trimStr.length();
-		if (index > -1) {
-			src = src.substring(index+trimStrLen, len-1);
-		}
-		index=src.lastIndexOf(trimStr);
-		len=src.length();
-		if (src.lastIndexOf(trimStr) >-1) {
-			src = src.substring(0,index);
-		}
-		return src;
+	public static String trimEdgeComma(CharSequence charSequence) {
+		return trimEdge(charSequence,CharTag.COMMA);
 	}
-
+	
+	/**
+	 * 
+	 * 去除开头和结尾的字符串
+	 * 
+	 * @param charSequence 要处理的字符串
+	 * @param delStr       要去除的字符串
+	 * @return
+	 */
+	public static String trimEdge(CharSequence charSequence, String delStr) {
+		String srcStr = charSequence.toString();
+		if (srcStr.startsWith(delStr)) {
+			srcStr = srcStr.substring(delStr.length());
+		}
+		if (srcStr.endsWith(delStr)) {
+			srcStr = srcStr.substring(0, srcStr.length() - delStr.length());
+		}
+		return srcStr;
+	}
+	
 
 	public static boolean checkNotEmpty(Object obj) {
 		return !checkEmpty(obj);
@@ -166,12 +161,21 @@ public class StrTool {
 		return null;
 	}
 
-	public static StringBuilder concat(CharSequence... strs) {
+	public static String concat(Object... strs) {
+		if (strs == null) {
+			return null;
+		}
+		if (strs.length == 1) {
+			return strs[0] == null ? null : strs[0].toString();
+		}
+		if (strs.length == 0) {
+			return StrTool.EMPTY;
+		}
 		StringBuilder sb = new StringBuilder();
 		for (int i = 0; i < strs.length; i++) {
 			sb.append(strs[i]);
 		}
-		return sb;
+		return sb.toString();
 	}
 
 	public static String fill0(String str, int len) {
