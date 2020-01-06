@@ -114,11 +114,11 @@ public class ClassTool {
 	/**
 	 * 反射取值
 	 * 
-	 * @param srcObj 反射的对象
+	 * @param obj 反射的对象
 	 * @param field  反射的字段
 	 * @return  字段值
-	 * @throws IllegalArgumentException
-	 * @throws IllegalAccessException
+	 * @throws IllegalArgumentException  非法参数
+	 * @throws IllegalAccessException  非法访问
 	 */
 	public static Object reflexVal(Object obj,  Field field) throws IllegalArgumentException, IllegalAccessException{
 		field.setAccessible(true);
@@ -128,9 +128,9 @@ public class ClassTool {
 	/**
 	 * 获取非私有、非静态的字段(包含（非Object）父类的)
 	 * 
-	 * @param clazz
-	 * @param fieldName
-	 * @return
+	 * @param clazz 类
+	 * @param fieldName 字段名称
+	 * @return 字段对象
 	 */
 	public static Field searchDecararedField(Class<?> clazz, String fieldName) {
 		Class<?> nextClass = clazz;

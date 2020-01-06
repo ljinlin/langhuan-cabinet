@@ -66,8 +66,8 @@ public class Resp implements Serializable {
 	/**
 	 * 当data为{@code Map}时，调用此函数，数据将装载到其中，如果data为null，则默认创建一个{@code HashMap}作为data,并装载到其中
 	 * 
-	 * @param key      键
-	 * @param dataItem 值
+	 * @param dataItemKey      键
+	 * @param dataItemValue 值
 	 * @return 返回{@code HashMap}类型的data属性
 	 */
 	@SuppressWarnings("unchecked")
@@ -81,7 +81,7 @@ public class Resp implements Serializable {
 	/**
 	 * 当data为List时，调用此函数，数据将装载到其中，如果data为null，则默认创建一个ArrayList并装载到其中
 	 * 
-	 * @param dataItem 值
+	 * @param dataItemValue 值
 	 * @return 返回ArrayList类型的data属性
 	 */
 	@SuppressWarnings("unchecked")
@@ -130,7 +130,7 @@ public class Resp implements Serializable {
 	 * 
 	 * 判断是否只是成功：ResultStatus.SUCCESS是成功
 	 * 
-	 * @return
+	 * @return true成功,false失败
 	 */
 	public boolean onlySuccess() {
 		if (this.status.code.equals(RespStatus.SUCCESS.code)) {
@@ -142,7 +142,7 @@ public class Resp implements Serializable {
 	/**
 	 * 判断是否成功：{@code ResultStatus.SUCCESS}和{@code ResultStatus.IMPERFECT}都是成功
 	 * 
-	 * @return
+	 * @return true成功和半成功,其他false
 	 */
 	public boolean success() {
 		if (this.status.code.equals(RespStatus.SUCCESS.code) || this.status.code.equals(RespStatus.IMPERFECT.code)) {
@@ -155,7 +155,7 @@ public class Resp implements Serializable {
 	 * 判断是否不是异常：{@code ResultStatus.SUCCESS}、{@code ResultStatus.IMPERFECT}、{@code ResultStatus.WARNING}
 	 * 都不是异常
 	 * 
-	 * @return
+	 * @return true:{@code success()},警告，其他false
 	 */
 	public boolean notError() {
 		if (success() || this.status.code.equals(RespStatus.WARNING.code)) {
@@ -280,8 +280,9 @@ public class Resp implements Serializable {
 		/**
 		 * 半成功的结果（比如没有完全成功，或者成功结果不令人满意，如查询列表时空数据，如买车票，没抢到或者是只抢到部分）
 		 * 
+		 * @param data 响应数据
 		 * @param msg 自定义参数异常提示语
-		 * @return 警告对象
+		 * @return 半成功对象
 		 */
 		public static Resp buildImperfect(Object data, String... msg) {
 			Resp res = new Resp(RespStatus.IMPERFECT.code, StrTool.concat(msg));

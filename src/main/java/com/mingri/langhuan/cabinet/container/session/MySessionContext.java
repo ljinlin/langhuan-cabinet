@@ -60,8 +60,8 @@ public class MySessionContext {
 	/**
 	 * 获取session
 	 * 
-	 * @param sessionId
-	 * @return
+	 * @param sessionSubjectId session用户id 
+	 * @return session对象
 	 */
 	public MySession getSession(String sessionSubjectId) {
 		return sessionCache.get(buildSessionCacheKey(sessionSubjectId));
@@ -70,8 +70,8 @@ public class MySessionContext {
 	/**
 	 * 登录session
 	 * 
-	 * @param mySession
-	 * @param sessionSubject
+	 * @param sessionSubject session用户
+	 * @return session对象 
 	 */
 	public MySession loginSession(SessionSubject sessionSubject) {
 		Assert.isTrue((sessionSubject != null && StrTool.isNotEmpty(sessionSubject.getId())),
@@ -87,7 +87,7 @@ public class MySessionContext {
 	/**
 	 * 活动session
 	 * 
-	 * @param mySession
+	 * @param mySession session对象
 	 */
 	public void activeSession(MySession mySession) {
 		String sessionCacheKey = buildSessionCacheKey(mySession.getId());
@@ -122,27 +122,16 @@ public class MySessionContext {
 	/**
 	 * 退出session
 	 * 
-	 * @param mySession
+	 * @param sessionSubject session用户对象
 	 */
 	public void logoutSession(SessionSubject sessionSubject) {
 		sessionCache.remove(buildSessionCacheKey(sessionSubject.getId()));
 	}
 
-	/**
-	 * 构建session 缓存key
-	 * 
-	 * @param sessionId
-	 * @return 返回一个session缓存key
-	 */
 	protected String buildSessionCacheKey(String sessionId) {
 		return ThreadTool.buildLock("session:", sessionId);
 	}
 
-	/**
-	 * 创建session
-	 * 
-	 * @return
-	 */
 	private MySession createSession(SessionSubject sessionSubject) {
 		MySession mySession = new MySession();
 		return mySession;
@@ -151,7 +140,6 @@ public class MySessionContext {
 	/**
 	 * 活动session任务
 	 * 
-	 * @param mySession
 	 */
 	private void excutActiveSessionTask() {
 		if (ACTIVE_SESSION_FLAG.incrementAndGet() > 1) {

@@ -23,7 +23,7 @@ public class MyComparable<T> {
 	/**
 	 * 是否大于等于
 	 * @param o 要对比的目标对象
-	 * @return
+	 * @return true:大于且等于
 	 */
 	public boolean isGtEq(T o) {
 		return this.compareTo(o).isGtEq();

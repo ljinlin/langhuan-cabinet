@@ -24,17 +24,17 @@ import com.mingri.langhuan.cabinet.constant.FileSufx;
 public class FileTool {
 	private static final Logger LOGGER = LoggerFactory.getLogger(FileTool.class);
 
-	public static void copy(InputStream initialStream, File targetFile) throws FileNotFoundException, IOException {
+	public static void copy(InputStream sourceStream, File targetFile) throws FileNotFoundException, IOException {
 		try (OutputStream outStream = new FileOutputStream(targetFile);) {
 			byte[] buffer = new byte[8 * 1024];
 			int bytesRead;
-			while ((bytesRead = initialStream.read(buffer)) != -1) {
+			while ((bytesRead = sourceStream.read(buffer)) != -1) {
 				outStream.write(buffer, 0, bytesRead);
 			}
 		} finally {
 			try {
-				if (initialStream != null) {
-					initialStream.close();
+				if (sourceStream != null) {
+					sourceStream.close();
 				}
 			} catch (IOException e) {
 				LOGGER.error("捕获到异常,打印日志：{}", e);
@@ -42,14 +42,6 @@ public class FileTool {
 		}
 	}
 
-	/**
-	 * 将source 复制 给 target
-	 * 
-	 * @param source
-	 * @param target
-	 * @throws IOException
-	 * @throws FileNotFoundException
-	 */
 	public static void copy(File source, File target) throws FileNotFoundException, IOException {
 		try (FileOutputStream output = new FileOutputStream(target);
 				FileInputStream input = new FileInputStream(source);) {
@@ -172,7 +164,7 @@ public class FileTool {
 				}
 			}
 		} catch (IOException e) {
-			LOGGER.error("捕获到异常,打印日志：{}", e);
+			LOGGER.error("扫描类异常：", e);
 		}
 
 		return classes;
@@ -184,18 +176,18 @@ public class FileTool {
 	public static final char DIR_SEPARATOR = '/';
 	
 	/**
-	 * 包格式转目录格式：a.b.c ——> a/b/c
+	 * 包格式转目录格式：a.b.c 转 a/b/c
 	 * @param pkgPath 包名称
-	 * @return
+	 * @return 目录格式字符串
 	 */
 	public static String pkgToDir(String pkgPath) {
 		return pkgPath.replace('.', DIR_SEPARATOR);
 	}
 	
 	/**
-	 * 目录格式转包格式：a/b/c ——> a.b.c
-	 * @param pkgPath 目录名称
-	 * @return
+	 * 目录格式转包格式：a/b/c 转 a.b.c
+	 * @param dirPath 目录名称
+	 * @return java包格式字符串
 	 */
 	public static String dirToPkg(String dirPath) {
 		return dirPath.replace(DIR_SEPARATOR, '.');

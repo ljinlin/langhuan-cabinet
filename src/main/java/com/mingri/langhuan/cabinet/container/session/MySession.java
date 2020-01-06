@@ -65,9 +65,9 @@ public class MySession implements Serializable {
 	}
 
 	/**
-	 * 更新用户信息
+	 * 更新session用户信息
 	 * 
-	 * @param loginUser
+	 * @param loginUser 登录的用户
 	 */
 	public synchronized void updateLoginUser(SessionSubject loginUser) {
 		Assert.isTrue((this.loginUser != null && this.loginUser.getId().equals(loginUser.getId())), "该用户未登录，或者不是同一个用户");

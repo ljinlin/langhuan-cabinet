@@ -23,7 +23,6 @@ public class StrTool {
 		return UUID.randomUUID().toString().replace("-", "");
 	}
 
-
 	public static final Pattern CAMEL_PATTERN = Pattern.compile("_(\\w)");
 
 	/**
@@ -79,27 +78,24 @@ public class StrTool {
 		return true;
 	}
 
-	
-	
 	/**
 	 * 
-	 * 去除开头和结尾的字符串
+	 * 去除开头和结尾的逗号
 	 * 
 	 * @param charSequence 要处理的字符串
-	 * @param delStr       要去除的字符串
-	 * @return
+	 * @return 去除头尾逗号后的字符串
 	 */
 	public static String trimEdgeComma(CharSequence charSequence) {
-		return trimEdge(charSequence,CharTag.COMMA);
+		return trimEdge(charSequence, CharTag.COMMA);
 	}
-	
+
 	/**
 	 * 
 	 * 去除开头和结尾的字符串
 	 * 
 	 * @param charSequence 要处理的字符串
 	 * @param delStr       要去除的字符串
-	 * @return
+	 * @return 去除头尾后的字符串
 	 */
 	public static String trimEdge(CharSequence charSequence, String delStr) {
 		String srcStr = charSequence.toString();
@@ -111,14 +107,13 @@ public class StrTool {
 		}
 		return srcStr;
 	}
-	
 
 	public static boolean checkNotEmpty(Object obj) {
 		return !checkEmpty(obj);
 	}
 
 	/**
-	 * 获取后缀名：aaa.txt——> .txt
+	 * 获取后缀名：aaa.txt 转 .txt
 	 * 
 	 * @param str 字符串
 	 * @return 返回后缀名
@@ -128,7 +123,7 @@ public class StrTool {
 	}
 
 	/**
-	 * 获取前缀 aaa.txt——> aaa
+	 * 获取前缀 aaa.txt 转 aaa
 	 * 
 	 * @param str 字符串
 	 * @return 返回前缀子字符串

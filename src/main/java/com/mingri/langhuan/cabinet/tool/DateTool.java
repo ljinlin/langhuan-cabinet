@@ -45,7 +45,7 @@ public class DateTool {
 	 * 
 	 * @param date1 日期1
 	 * @param date2 日期2
-	 * @return
+	 * @return true:是同一天，false:不是
 	 */
 	public static boolean isSameDay(Date date1, Date date2) {
 		Calendar cal1 = Calendar.getInstance();

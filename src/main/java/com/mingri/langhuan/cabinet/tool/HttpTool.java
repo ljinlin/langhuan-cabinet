@@ -23,7 +23,7 @@ public class HttpTool {
 	private HttpTool() {
 	}
 
-	public static final String[] HEADERS_OF_IP = { "x-forwarded-for", "Proxy-Client-IP", "WL-Proxy-Client-IP",
+	private static final String[] HEADERS_OF_IP = { "x-forwarded-for", "Proxy-Client-IP", "WL-Proxy-Client-IP",
 			"HTTP_CLIENT_IP", "HTTP_X_FORWARDED_FOR", "X-Real-IP" };
 
 	private static final int HEADER_INDEX_FORWARDED = 0;
@@ -31,7 +31,7 @@ public class HttpTool {
 	/**
 	 * 获取客户端真实请求ip
 	 * 
-	 * @param request
+	 * @param request  请求对象
 	 * @return 返回ip地址
 	 */
 	public static String getIpAddr(HttpServletRequest request) {
@@ -57,11 +57,11 @@ public class HttpTool {
 	}
 
 	/**
-	 * 从header、cookie、request中查找参数
+	 * 依次从header、cookie、request中查找参数
 	 * 
-	 * @param reques
-	 * @param paramName
-	 * @return
+	 * @param reques 请求对象
+	 * @param paramName 要查找的参数名称
+	 * @return 参数值
 	 */
 	public static String searchForClient(HttpServletRequest reques, String paramName) {
 		String value = reques.getHeader(paramName);

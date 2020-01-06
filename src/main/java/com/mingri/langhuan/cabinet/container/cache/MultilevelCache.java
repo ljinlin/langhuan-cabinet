@@ -171,7 +171,7 @@ public class MultilevelCache {
 
 	public static boolean hashKey(String key) {
 		boolean flag = FIRST_LEVE_LCACHE.hasKey(key);
-		if (!flag) {
+		if (!flag&&SECOND_CACHE!=null) {
 			flag = SECOND_CACHE.hasKey(key);
 		}
 		return flag;
