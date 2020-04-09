@@ -64,7 +64,7 @@ public class MultilevelCache {
 	/**
 	 * 提供数据，并缓存
 	 * 
-	 * @param          <T> 返回的对象类型
+	 * @param <T>      返回的对象类型
 	 * @param key      缓存键
 	 * @param supplier 缓存值提供者
 	 * @return 返回缓存的对象
@@ -101,7 +101,7 @@ public class MultilevelCache {
 	/**
 	 * 提供数据，并缓存一定的时间
 	 * 
-	 * @param               <T> 返回的对象类型
+	 * @param <T>           返回的对象类型
 	 * @param key           缓存键
 	 * @param timeOutSecond 缓存超时时间（秒）
 	 * @param supplier      缓存数据计算者
@@ -171,7 +171,7 @@ public class MultilevelCache {
 
 	public static boolean hashKey(String key) {
 		boolean flag = FIRST_LEVE_LCACHE.hasKey(key);
-		if (!flag&&SECOND_CACHE!=null) {
+		if (!flag && SECOND_CACHE != null) {
 			flag = SECOND_CACHE.hasKey(key);
 		}
 		return flag;
