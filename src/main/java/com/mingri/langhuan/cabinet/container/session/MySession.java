@@ -3,29 +3,35 @@ package com.mingri.langhuan.cabinet.container.session;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
-import org.springframework.util.Assert;
-
 import com.mingri.langhuan.cabinet.tool.StrTool;
 
+/**
+ * Sesssion对象，loginUser为空时，相当于未登录
+ * 
+ * @author ljl 2020年4月10日
+ */
 public class MySession implements Serializable {
 
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 9107882313903674965L;
-	private final String id;
-	private SessionSubject loginUser;
-	private boolean isLogin;
+	private String id;
+	private Object loginUser;
 	private MySeesionAttributes attributes;
 	private LocalDateTime lastActiveTime;
 
 	MySession() {
-		this.id = StrTool.getUUId();
 		this.lastActiveTime = LocalDateTime.now();
 		this.attributes = new MySeesionAttributes();
+		this.id = generatorId();
 	}
 
-	public SessionSubject getLoginUser() {
+	public String generatorId() {
+		return StrTool.getUUId();
+	}
+
+	public Object getLoginUser() {
 		return loginUser;
 	}
 
@@ -50,17 +56,17 @@ public class MySession implements Serializable {
 	}
 
 	public boolean isLogin() {
-		return isLogin;
+		return this.loginUser != null;
 	}
 
-	void login(SessionSubject loginUser) {
-		if (!this.isLogin) {
-			this.isLogin = true;
-			this.loginUser = loginUser;
-		}
+	void login(Object loginUser) {
+		this.loginUser = loginUser;
 	}
 
-	void active() {
+	/**
+	 * 活动
+	 */
+	synchronized void active() {
 		this.lastActiveTime = LocalDateTime.now();
 	}
 
@@ -69,8 +75,7 @@ public class MySession implements Serializable {
 	 * 
 	 * @param loginUser 登录的用户
 	 */
-	public synchronized void updateLoginUser(SessionSubject loginUser) {
-		Assert.isTrue((this.loginUser != null && this.loginUser.getId().equals(loginUser.getId())), "该用户未登录，或者不是同一个用户");
+	public void updateLoginUser(Object loginUser) {
 		this.loginUser = loginUser;
 	}
 

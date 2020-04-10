@@ -11,7 +11,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.springframework.util.Assert;
 
 import com.mingri.langhuan.cabinet.tool.MyComparable;
-import com.mingri.langhuan.cabinet.tool.StrTool;
 import com.mingri.langhuan.cabinet.tool.ThreadTool;
 
 public class MySessionContext {
@@ -21,8 +20,9 @@ public class MySessionContext {
 	 */
 	private int sessionTimeout = 60 * 60;
 
-	private int sessionMaxMarginTime = sessionTimeout + 15;
-
+	/**
+	 * session缓存，默认{@code com.mingri.langhuan.cabinet.container.session.SessionCacheImpl}
+	 */
 	private SessionCache<String, MySession> sessionCache = new SessionCacheImpl();
 
 	/**
@@ -46,7 +46,6 @@ public class MySessionContext {
 
 	public void setSessionTimeout(int sessionTimeout) {
 		this.sessionTimeout = sessionTimeout;
-		sessionMaxMarginTime = this.sessionTimeout + 15;
 	}
 
 	public SessionCache<String, MySession> getSessionCache() {
@@ -60,85 +59,92 @@ public class MySessionContext {
 	/**
 	 * 获取session
 	 * 
-	 * @param sessionSubjectId session用户id 
+	 * @param sessionId session对象id
 	 * @return session对象
 	 */
-	public MySession getSession(String sessionSubjectId) {
-		return sessionCache.get(buildSessionCacheKey(sessionSubjectId));
+	public MySession getSession(String sessionId) {
+		return sessionCache.get(buildSessionCacheKey(sessionId));
 	}
 
 	/**
 	 * 登录session
 	 * 
-	 * @param sessionSubject session用户
-	 * @return session对象 
+	 * @param sessionUser session用户
+	 * @return session对象
 	 */
-	public MySession loginSession(SessionSubject sessionSubject) {
-		Assert.isTrue((sessionSubject != null && StrTool.isNotEmpty(sessionSubject.getId())),
-				"sessionSubject或者其id属性 不能为null");
-		String sessionKey = buildSessionCacheKey(sessionSubject.getId());
-		Assert.state(!sessionCache.hasSession(sessionKey), "该用户已经是登录状态，不能重复登录");
-		MySession mySession = createSession(sessionSubject);
-		mySession.login(sessionSubject);
+	public MySession loginSession(Object sessionUser) {
+		Assert.isTrue(sessionUser != null, "sessionUser 不能为null");
+		MySession mySession = createSession();
+		String sessionKey = buildSessionCacheKey(mySession.getId());
+		mySession.login(sessionUser);
 		sessionCache.put(sessionKey, mySession, sessionTimeout);
 		return mySession;
 	}
 
 	/**
-	 * 活动session
-	 * 
-	 * @param mySession session对象
-	 */
-	public void activeSession(MySession mySession) {
-		String sessionCacheKey = buildSessionCacheKey(mySession.getId());
-		MySession oldMySession = WAIT_ACTIVE_SESSION_MAP.get(sessionCacheKey);
-		if (oldMySession != null) {
-			oldMySession.active();
-			return;
-		}
-
-		if (MyComparable.creat(mySession.getLastActiveTime().plusSeconds(sessionMaxMarginTime))
-				.isLtEq(LocalDateTime.now())) {
-			/*
-			 * 即将过期，立刻同步缓存
-			 */
-			synchronized (ThreadTool.buildLock(mySession.getId())) {
-				if (MyComparable.creat(mySession.getLastActiveTime().plusSeconds(15)).isGt(LocalDateTime.now())) {
-					return;
-				}
-				mySession.active();
-				sessionCache.put(sessionCacheKey, mySession, sessionTimeout);
-			}
-		} else {
-			/*
-			 * 延后同步缓存
-			 */
-			mySession.active();
-			WAIT_ACTIVE_SESSION_MAP.put(sessionCacheKey, mySession);
-			excutActiveSessionTask();
-		}
-	}
-
-	/**
 	 * 退出session
 	 * 
-	 * @param sessionSubject session用户对象
+	 * @param sessionId  session对象id
 	 */
-	public void logoutSession(SessionSubject sessionSubject) {
-		sessionCache.remove(buildSessionCacheKey(sessionSubject.getId()));
+	public void logoutSession(String sessionId) {
+		sessionCache.remove(buildSessionCacheKey(sessionId));
 	}
 
 	protected String buildSessionCacheKey(String sessionId) {
 		return ThreadTool.buildLock("session:", sessionId);
 	}
 
-	private MySession createSession(SessionSubject sessionSubject) {
+	private MySession createSession() {
 		MySession mySession = new MySession();
 		return mySession;
 	}
 
 	/**
-	 * 活动session任务
+	 * 活动session
+	 * 每个请求都要活动session,更新session的最后访问时间，为了提高最大并发量，保护session缓存，防止每一次请求都去
+	 * 更新session缓存，此处采用策略5秒内同一个session最多更新一次缓存，但是依然保证每次请求都更新session的最后访问时间
+	 * 活动session策略：
+	 * 如果同一个session对象正在等待更新缓存，则该线程更新执行session.active后返回，
+	 * 如果该session在超时时间减5秒内,则装入待更新缓存的容器，并且查看有没有更新session缓存执行器正在运行，没有则启动更新session缓存执行器
+	 * 如果该session已经超时，此函数不判断是否超时，只要进来session都进行活动。
+	 * session若超时，其实也是获取不到的，因为缓存已经进行存储时间限制，即使程序执行耗时误差，session设计允许最大超时15秒。
+	 * 针对这种超时边缘的session，直接更新缓存，而不进入session缓存执行器更新
+	 * 
+	 * @param mySession session对象
+	 */
+	public void activeSession(MySession mySession) {
+		String sessionCacheKey = buildSessionCacheKey(mySession.getId());
+		MySession oldMySession = WAIT_ACTIVE_SESSION_MAP.get(sessionCacheKey);
+		// session对象还在等待更新缓存，该线程只执行session签到，不需去更新缓存
+		if (oldMySession != null) {
+			oldMySession.active();
+			return;
+		}
+		LocalDateTime now=LocalDateTime.now();
+		//超时时间内访问过
+		if (MyComparable.creat(mySession.getLastActiveTime().plusSeconds(sessionTimeout-5)).isGt(now)) {
+			/*
+			 * 延后同步缓存
+			 */
+			mySession.active();
+			WAIT_ACTIVE_SESSION_MAP.put(sessionCacheKey, mySession);
+			excutActiveSessionTask();
+
+		} else {
+			// 即将过期，立刻同步缓存
+			synchronized (ThreadTool.buildLock(mySession.getId())) {
+				// 双重判断，如果是刚刚15秒内才活跃，则不再更新缓存
+				if (MyComparable.creat(mySession.getLastActiveTime().plusSeconds(15)).isGt(now)) {
+					return;
+				}
+				mySession.active();
+				sessionCache.put(sessionCacheKey, mySession, sessionTimeout);
+			}
+		}
+	}
+
+	/**
+	 * 活动session任务，有任务时，保证最多只有一个线程执行
 	 * 
 	 */
 	private void excutActiveSessionTask() {
