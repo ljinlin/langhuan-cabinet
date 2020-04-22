@@ -37,6 +37,13 @@ public class Requ<T extends DataModel> implements Serializable {
 		return t;
 	}
 
+	public T getTOfDft(T dft) {
+		if(t==null) {
+			t=dft;
+		}
+		return t;
+	}
+
 	public void setT(T t) {
 		this.t = t;
 	}
@@ -49,5 +56,6 @@ public class Requ<T extends DataModel> implements Serializable {
 		PageHandler.setPage(page);
 		this.page = page;
 	}
+	
 
 }

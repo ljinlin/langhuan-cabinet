@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.github.ljinlin</groupId>
 	<artifactId>langhuan-cabinet</artifactId>
-	<version>1.1.2-beta1</version>
+	<version>1.1.3-beta1</version>
 	<name>langhuan-cabinet</name>
 	<description>This is a little book cabinet of Java.There are the most abstract state, type and other constants, a variety of components: unique id generator, dynamic data source components, cache components, interface specification groups, and a variety of tools: time, string, validation, reflection, object and other operating tools</description>
 	<url>https://github.com/ljinlin/langhuan-cabinet</url>
@@ -110,7 +110,7 @@
 			</plugin>
 
 			<!-- Javadoc -->
-	 		<plugin>
+	  		<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
 				<version>2.9.1</version>
@@ -122,10 +122,10 @@
 						</goals>
 					</execution>
 				</executions>
-			</plugin> 
+			</plugin>  
 
 			<!-- GPG -->
-	 		<plugin>
+	 	 	<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-gpg-plugin</artifactId>
 				<version>1.5</version>
@@ -137,7 +137,7 @@
 						</goals>
 					</execution>
 				</executions>
-			</plugin> 
+			</plugin>  
 			<!--Release -->
 			<!-- <plugin> <groupId>org.apache.maven.plugins</groupId> <artifactId>maven-release-plugin</artifactId> 
 				<version>2.5.1</version> </plugin> -->

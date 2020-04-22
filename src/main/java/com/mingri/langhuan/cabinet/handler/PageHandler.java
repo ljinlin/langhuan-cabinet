@@ -30,7 +30,7 @@ public final class PageHandler {
 	 * @param orderBy 排序sql，order by 后面的sql
 	 */
 	public static void startPageIfValid(String orderBy) {
-		if (!validPage()) {
+		if (validPage()) {
 			PageHelper.startPage(LOCAL_PAGE.get().getPageNo(), LOCAL_PAGE.get().getLimit(), orderBy);
 		}
 	}
