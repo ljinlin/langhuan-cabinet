@@ -1,10 +1,11 @@
 package com.mingri.langhuan.cabinet.container.cache;
 
-import java.util.function.Supplier;
+import java.util.function.Function;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.mingri.langhuan.cabinet.tool.CacheTool;
 import com.mingri.langhuan.cabinet.tool.ThreadTool;
 
 /**
@@ -13,51 +14,54 @@ import com.mingri.langhuan.cabinet.tool.ThreadTool;
  * @author ljl
  *
  */
-public class MultilevelCache {
+public class MultilevelCache implements ICache {
 	private static final Logger LOGGER = LoggerFactory.getLogger(MultilevelCache.class);
 
 	private MultilevelCache() {
 	}
 
-	private static ICache FIRST_LEVE_LCACHE = LocalCache.instance();
-	private static ICache SECOND_CACHE;
+	private ICache firstLevelCache = LocalCache.instance();
+	private ICache secondLevelCache;
 
 	private static final String LOCK_PREFIX = "MUILCACHE_LOCK:";
+	private int firstLevelCacheMaxTimeout = 120;// 默认120秒
 
-	public static synchronized void init() {
-		if (MultilevelCache.FIRST_LEVE_LCACHE == null) {
-			MultilevelCache.FIRST_LEVE_LCACHE = LocalCache.instance();
-		}
+	public ICache getFirstLevelCache() {
+		return firstLevelCache;
 	}
 
-	public static synchronized void init(ICache firstCache, ICache secondCache) {
-		if (MultilevelCache.FIRST_LEVE_LCACHE == null && MultilevelCache.SECOND_CACHE == null) {
-			MultilevelCache.FIRST_LEVE_LCACHE = firstCache;
-			MultilevelCache.SECOND_CACHE = secondCache;
-			LOGGER.info("开启二级缓存，SECOND_CACHE：", secondCache);
-		}
+	public void setFirstLevelCache(ICache firstLevelCache) {
+		this.firstLevelCache = firstLevelCache;
+		LOGGER.info("开启一级缓存：{}", firstLevelCache);
 	}
 
-	public static synchronized void initAndSetFirstCache(ICache firstCache) {
-		if (MultilevelCache.SECOND_CACHE == null) {
-			MultilevelCache.FIRST_LEVE_LCACHE = firstCache;
-		}
+	public ICache getSecondCache() {
+		return secondLevelCache;
 	}
 
-	public static synchronized void initAndSetSecondCache(ICache secondCache) {
-		if (MultilevelCache.SECOND_CACHE == null) {
-			MultilevelCache.FIRST_LEVE_LCACHE = LocalCache.instance();
-			MultilevelCache.SECOND_CACHE = secondCache;
-			LOGGER.info("开启二级缓存，SECOND_CACHE：", SECOND_CACHE);
-		}
+	public void setSecondCache(ICache secondCache) {
+		this.secondLevelCache = secondCache;
+		LOGGER.info("开启二级缓存：{}", secondCache);
 	}
 
-	public static void put(String key, Object value, int timeOutSecond) {
-		if (SECOND_CACHE != null) {
-			SECOND_CACHE.put(key, value, timeOutSecond);
-			FIRST_LEVE_LCACHE.put(key, value, cmpFirstCacheTimeOutSecond(timeOutSecond));
+	public int getFirstLevelCacheMaxTimeout() {
+		return firstLevelCacheMaxTimeout;
+	}
+
+	public void setFirstLevelCacheMaxTimeout(int firstLevelCacheMaxTimeout) {
+		this.firstLevelCacheMaxTimeout = firstLevelCacheMaxTimeout;
+	}
+
+	public void put(String key, Object value) {
+		put(key, value, 0);
+	}
+
+	public void put(String key, Object value, int timeOutSecond) {
+		if (secondLevelCache != null) {
+			secondLevelCache.put(key, value, timeOutSecond);
+			firstLevelCache.put(key, value, cmpFirstCacheTimeOutSecond(timeOutSecond));
 		} else {
-			FIRST_LEVE_LCACHE.put(key, value, timeOutSecond);
+			firstLevelCache.put(key, value, timeOutSecond);
 		}
 	}
 
@@ -69,33 +73,8 @@ public class MultilevelCache {
 	 * @param supplier 缓存值提供者
 	 * @return 返回缓存的对象
 	 */
-	public static <T> T computeIfAbsent(String key, Supplier<T> supplier) {
-		T data = FIRST_LEVE_LCACHE.get(key);
-		if (data == null && SECOND_CACHE != null) {
-			data = SECOND_CACHE.get(key);
-		}
-		if (data != null) {
-			return data;
-		}
-
-		synchronized (ThreadTool.buildLock(LOCK_PREFIX, key)) {
-			data = FIRST_LEVE_LCACHE.get(key);
-			if (data == null && SECOND_CACHE != null) {
-				data = SECOND_CACHE.get(key);
-			}
-			if (data != null) {
-				return data;
-			}
-
-			data = supplier.get();
-			if (SECOND_CACHE != null) {
-				SECOND_CACHE.put(key, data);
-				FIRST_LEVE_LCACHE.put(key, data, 60);
-			} else {
-				FIRST_LEVE_LCACHE.put(key, data);
-			}
-		}
-		return data;
+	public <T> T computeIfAbsent(String key, Function<String, T> mappingFunction) {
+		return computeIfAbsent(key, 0, mappingFunction);
 	}
 
 	/**
@@ -107,82 +86,145 @@ public class MultilevelCache {
 	 * @param supplier      缓存数据计算者
 	 * @return 返回缓存的对象
 	 */
-	public static <T> T computeIfAbsent(String key, int timeOutSecond, Supplier<T> supplier) {
-		T data = FIRST_LEVE_LCACHE.get(key);
-		if (data == null && SECOND_CACHE != null) {
-			data = SECOND_CACHE.get(key);
+	public <T> T computeIfAbsent(String key, int timeOutSecond, Function<String, T> mappingFunction) {
+		T data = firstLevelCache.get(key);
+		if (data == null && secondLevelCache != null) {
+			data = secondLevelCache.get(key);
 		}
 		if (data != null) {
 			return data;
 		}
 		synchronized (ThreadTool.buildLock(LOCK_PREFIX, key)) {
-			data = FIRST_LEVE_LCACHE.get(key);
-			if (data == null && SECOND_CACHE != null) {
-				data = SECOND_CACHE.get(key);
+			data = firstLevelCache.get(key);
+			if (data == null && secondLevelCache != null) {
+				data = secondLevelCache.get(key);
 			}
 			if (data != null) {
 				return data;
 			}
-			data = supplier.get();
-			if (SECOND_CACHE != null) {
-				SECOND_CACHE.put(key, data, timeOutSecond);
-				FIRST_LEVE_LCACHE.put(key, data, cmpFirstCacheTimeOutSecond(timeOutSecond));
+			data = mappingFunction.apply(key);
+			if (secondLevelCache != null) {
+				secondLevelCache.put(key, data, timeOutSecond);
+				firstLevelCache.put(key, data, cmpFirstCacheTimeOutSecond(timeOutSecond));
 			} else {
-				FIRST_LEVE_LCACHE.put(key, data, timeOutSecond);
+				firstLevelCache.put(key, data, timeOutSecond);
 			}
 
 		}
 		return data;
 	}
 
-	public static <T> T removeAndGet(String key) {
+	@SuppressWarnings("unchecked")
+	public <T> T removeAndGet(String key) {
 		T data = null;
-		if (SECOND_CACHE != null) {
-			data = SECOND_CACHE.removeAndGet(key);
+		if (secondLevelCache != null) {
+			data = secondLevelCache.removeAndGet(key);
 		}
-		T data2 = FIRST_LEVE_LCACHE.removeAndGet(key);
+		T data2 = firstLevelCache.removeAndGet(key);
 		if (data == null) {
 			data = data2;
 		}
-		return data;
+		return (T) CacheTool.getSrcVal(data);
 	}
 
-	public static void remove(String key) {
-		if (SECOND_CACHE != null) {
-			SECOND_CACHE.remove(key);
+	public void remove(String key) {
+		if (secondLevelCache != null) {
+			secondLevelCache.remove(key);
 		}
-		FIRST_LEVE_LCACHE.remove(key);
+		firstLevelCache.remove(key);
 	}
 
-	public static <T> T get(String key) {
-		T data = FIRST_LEVE_LCACHE.get(key);
-		if (data == null && SECOND_CACHE != null) {
-			data = SECOND_CACHE.get(key);
+	@SuppressWarnings("unchecked")
+	public <T> T get(String key) {
+		T data = firstLevelCache.get(key);
+		if (data == null && secondLevelCache != null) {
+			data = secondLevelCache.get(key);
 		}
-		return data;
+		return (T) CacheTool.getSrcVal(data);
 	}
 
-	public static void expire(String key, int timeOutSecond) {
-		FIRST_LEVE_LCACHE.expire(key, timeOutSecond);
-		if (SECOND_CACHE != null) {
-			SECOND_CACHE.expire(key, timeOutSecond);
+	public void expire(String key, int timeOutSecond) {
+		firstLevelCache.expire(key, cmpFirstCacheTimeOutSecond(timeOutSecond));
+		if (secondLevelCache != null) {
+			secondLevelCache.expire(key, timeOutSecond);
 		}
 	}
 
-	public static boolean hashKey(String key) {
-		boolean flag = FIRST_LEVE_LCACHE.hasKey(key);
-		if (!flag && SECOND_CACHE != null) {
-			flag = SECOND_CACHE.hasKey(key);
+	public boolean hashKey(String key) {
+		boolean flag = firstLevelCache.hasKey(key);
+		if (!flag && secondLevelCache != null) {
+			flag = secondLevelCache.hasKey(key);
 		}
 		return flag;
 	}
 
-	private static int cmpFirstCacheTimeOutSecond(int timeOutSecond) {
-		if (timeOutSecond > 60) {
-			return 60;
-		} else if (timeOutSecond > 30) {
-			return timeOutSecond / 2;
+	private int cmpFirstCacheTimeOutSecond(int timeOutSecond) {
+		if (timeOutSecond < 1 || timeOutSecond > firstLevelCacheMaxTimeout) {
+			return firstLevelCacheMaxTimeout;
 		}
 		return timeOutSecond;
 	}
+
+	@Override
+	public void leftPush(String key, Object value) {
+		firstLevelCache.leftPush(key, value);
+		if (secondLevelCache != null) {
+			secondLevelCache.leftPush(key, value);
+		}
+	}
+
+	@Override
+	public void rightPush(String key, Object value) {
+		firstLevelCache.rightPush(key, value);
+		if (secondLevelCache != null) {
+			secondLevelCache.rightPush(key, value);
+		}
+	}
+
+	@Override
+	public <T> T rightPop(String key) {
+		T data = firstLevelCache.rightPop(key);
+		if (data == null && secondLevelCache != null) {
+			data = secondLevelCache.rightPop(key);
+		}
+		return data;
+	}
+
+	@Override
+	public <T> T leftPop(String key) {
+		T data = firstLevelCache.leftPop(key);
+		if (data == null && secondLevelCache != null) {
+			data = secondLevelCache.leftPop(key);
+		}
+		return data;
+	}
+
+	@Override
+	public <T> T putIfAbsent(String key, Object value) {
+		return putIfAbsent(key, value, 0);
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public <T> T putIfAbsent(String key, Object value, int timeOutSecond) {
+		Object data = firstLevelCache.putIfAbsent(key, value, timeOutSecond);
+		if (data == null && secondLevelCache != null) {
+			secondLevelCache.putIfAbsent(key, value, timeOutSecond);
+		}
+		return (T) data;
+	}
+
+	@Override
+	public boolean hasKey(String key) {
+		return firstLevelCache.hasKey(key) || (secondLevelCache != null && secondLevelCache.hasKey(key));
+	}
+
+	@Override
+	public long size() {
+		if (secondLevelCache != null) {
+			return secondLevelCache.size();
+		}
+		return firstLevelCache.size();
+	}
+
 }

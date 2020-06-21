@@ -13,7 +13,7 @@ import java.util.function.Function;
 
 import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
 import com.googlecode.concurrentlinkedhashmap.Weighers;
-import com.mingri.langhuan.cabinet.tool.StrTool;
+import com.mingri.langhuan.cabinet.tool.CacheTool;
 import com.mingri.langhuan.cabinet.tool.ThreadTool;
 
 /**
@@ -38,7 +38,7 @@ public class LocalCache implements ICache {
 	/**
 	 * 存储最大数据数量，超出该数据量时，删除旧的数据
 	 */
-	private static final int MAXCOUNT = 2000;
+	private static final long MAXCOUNT = 10000;
 
 	/**
 	 * 缓存容器
@@ -74,24 +74,11 @@ public class LocalCache implements ICache {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public void rightPush(String key, Object value, int timeOutSecond) {
-		ConcurrentLinkedDeque<Object> linkList = (ConcurrentLinkedDeque<Object>) getOfContainer(key);
-		if (linkList == null) {
-			linkList = new ConcurrentLinkedDeque<>();
-			CONTAINER.put(key, linkList);
-		}
-		KEY_TIME_CONTAINER.put(key, cmpTimeOutSecond(timeOutSecond));
-		linkList.offer(value);
-		LocalCache.streamContainer();
-	}
-
-	@SuppressWarnings("unchecked")
-	@Override
 	public void rightPush(String key, Object value) {
 		ConcurrentLinkedDeque<Object> linkList = (ConcurrentLinkedDeque<Object>) getOfContainer(key);
 		if (linkList == null) {
 			linkList = new ConcurrentLinkedDeque<>();
-			CONTAINER.putIfAbsent(key, linkList);
+			linkList = (ConcurrentLinkedDeque<Object>) CONTAINER.putIfAbsent(key, linkList);
 		}
 		linkList.offer(value);
 		LocalCache.streamContainer();
@@ -103,7 +90,7 @@ public class LocalCache implements ICache {
 		ConcurrentLinkedDeque<Object> linkList = (ConcurrentLinkedDeque<Object>) getOfContainer(key);
 		if (linkList == null) {
 			linkList = new ConcurrentLinkedDeque<>();
-			CONTAINER.putIfAbsent(key, linkList);
+			linkList = (ConcurrentLinkedDeque<Object>) CONTAINER.putIfAbsent(key, linkList);
 		}
 		linkList.offerFirst(value);
 		LocalCache.streamContainer();
@@ -129,39 +116,49 @@ public class LocalCache implements ICache {
 		return (T) linkList.pollFirst();
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public <T> T computeIfAbsent(String key, int timeOutSecond, Function<String, T> mappingFunction) {
-		T t = computeToContainer(key, mappingFunction);
-		KEY_TIME_CONTAINER.putIfAbsent(key, cmpTimeOutSecond(timeOutSecond));
+		Object result = CONTAINER.computeIfAbsent(key, (k) -> {
+			Object value = CacheTool.getSafeCacheVal(mappingFunction.apply(k));
+			if (timeOutSecond > 0) {
+				KEY_TIME_CONTAINER.put(key, cmpTimeOutSecond(timeOutSecond));
+			}
+			return value;
+		});
 		LocalCache.streamContainer();
-		return t;
+		return (T) CacheTool.getSrcVal(result);
 	}
 
 	@Override
 	public void put(String key, Object value) {
-		putToContainer(key, value);
+		put(key, value, 0);
 	}
 
 	@Override
 	public void put(String key, Object value, int timeOutSecond) {
 		putToContainer(key, value);
-		KEY_TIME_CONTAINER.put(key, cmpTimeOutSecond(timeOutSecond));
+		if (timeOutSecond > 0) {
+
+			KEY_TIME_CONTAINER.put(key, cmpTimeOutSecond(timeOutSecond));
+		}
 		LocalCache.streamContainer();
 	}
 
 	@Override
-	public boolean putIfAbsent(String key, Object value) {
-		Object result = putIfAbsentToContainer(key, value);
-		LocalCache.streamContainer();
-		return result == null;
+	public <T> T putIfAbsent(String key, Object value) {
+		return putIfAbsent(key, value, 0);
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
-	public boolean putIfAbsent(String key, Object value, int timeOutSecond) {
+	public <T> T putIfAbsent(String key, Object value, int timeOutSecond) {
 		Object result = putIfAbsentToContainer(key, value);
-		KEY_TIME_CONTAINER.putIfAbsent(key, cmpTimeOutSecond(timeOutSecond));
+		if (timeOutSecond > 0 && result == null) {
+			KEY_TIME_CONTAINER.put(key, cmpTimeOutSecond(timeOutSecond));
+		}
 		LocalCache.streamContainer();
-		return result == null;
+		return (T) result;
 	}
 
 	@SuppressWarnings("unchecked")
@@ -172,8 +169,7 @@ public class LocalCache implements ICache {
 			return null;
 		}
 		if (LocalCache.isTimeOut(key)) {
-			CONTAINER.remove(key);
-			KEY_TIME_CONTAINER.remove(key);
+			LocalCache.streamContainer();
 			return null;
 		} else {
 			return value;
@@ -182,7 +178,7 @@ public class LocalCache implements ICache {
 
 	@Override
 	public void expire(String key, int timeOutSecond) {
-		if (KEY_TIME_CONTAINER.containsKey(key)) {
+		if (CONTAINER.containsKey(key)) {
 			KEY_TIME_CONTAINER.put(key, cmpTimeOutSecond(timeOutSecond));
 		}
 	}
@@ -201,6 +197,11 @@ public class LocalCache implements ICache {
 	@Override
 	public <T> T removeAndGet(String key) {
 		return (T) removeOfContainer(key);
+	}
+
+	@Override
+	public long size() {
+		return CONTAINER.size();
 	}
 
 	/**
@@ -250,31 +251,18 @@ public class LocalCache implements ICache {
 		return saveTime == null || saveTime < now;
 	}
 
-	public static final String NULL_VALUE = StrTool.getUUId();
-
 	private Object getOfContainer(String key) {
 		Object value = CONTAINER.get(key);
-		return value == NULL_VALUE ? null : value;
+		return CacheTool.getSrcVal(value);
 	}
 
 	private Object putToContainer(String key, Object value) {
-		if (value == null) {
-			CONTAINER.put(key, NULL_VALUE);
-			return null;
-		} else {
-			CONTAINER.put(key, value);
-			return value;
-		}
+		CONTAINER.put(key, CacheTool.getSafeCacheVal(value));
+		return value;
 	}
 
 	private Object putIfAbsentToContainer(String key, Object value) {
-		if (value == null) {
-			CONTAINER.putIfAbsent(key, NULL_VALUE);
-			return null;
-		} else {
-			CONTAINER.putIfAbsent(key, value);
-			return value;
-		}
+		return CacheTool.getSrcVal(CONTAINER.putIfAbsent(key, CacheTool.getSafeCacheVal(value)));
 	}
 
 	private boolean hasKeyOfContainer(String key) {
@@ -283,17 +271,8 @@ public class LocalCache implements ICache {
 
 	private Object removeOfContainer(String key) {
 		Object value = CONTAINER.remove(key);
-		if (value == null) {
-			KEY_TIME_CONTAINER.remove(key);
-		}
-		value = value == NULL_VALUE ? null : value;
-		return value;
-	}
-
-	private <T> T computeToContainer(String key, Function<String, T> mappingFunction) {
-		T value = mappingFunction.apply(key);
-		putToContainer(key, value);
-		return value;
+		KEY_TIME_CONTAINER.remove(key);
+		return CacheTool.getSrcVal(value);
 	}
 
 	private static void clearTimeoutData(Iterator<Entry<String, Object>> instanceIt, long now) {
@@ -313,4 +292,5 @@ public class LocalCache implements ICache {
 		}
 		return Long.parseLong(dt.format(yyyyMMddHHmmss_FMT));
 	}
+
 }

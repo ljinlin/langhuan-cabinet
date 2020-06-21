@@ -21,9 +21,9 @@ public class MySessionContext {
 	private int sessionTimeout = 60 * 60;
 
 	/**
-	 * session缓存，默认{@code com.mingri.langhuan.cabinet.container.session.SessionCacheImpl}
+	 * session缓存
 	 */
-	private SessionCache<String, MySession> sessionCache = new SessionCacheImpl();
+	private SessionCache<String, MySession> sessionCache;
 
 	/**
 	 * 待更新的session
@@ -34,11 +34,6 @@ public class MySessionContext {
 	 * 更新session最后访问时间线程,防止频繁的更新session 创建线程消耗性能
 	 */
 	private final ExecutorService THREAD_POOL = Executors.newCachedThreadPool();
-
-	/**
-	 * 活动session任务开关
-	 */
-	private final AtomicInteger ACTIVE_SESSION_FLAG = new AtomicInteger(0);
 
 	public int getSessionTimeout() {
 		return sessionTimeout;
@@ -84,7 +79,7 @@ public class MySessionContext {
 	/**
 	 * 退出session
 	 * 
-	 * @param sessionId  session对象id
+	 * @param sessionId session对象id
 	 */
 	public void logoutSession(String sessionId) {
 		sessionCache.remove(buildSessionCacheKey(sessionId));
@@ -100,11 +95,9 @@ public class MySessionContext {
 	}
 
 	/**
-	 * 活动session
-	 * 每个请求都要活动session,更新session的最后访问时间，为了提高最大并发量，保护session缓存，防止每一次请求都去
+	 * 活动session 每个请求都要活动session,更新session的最后访问时间，为了提高最大并发量，保护session缓存，防止每一次请求都去
 	 * 更新session缓存，此处采用策略5秒内同一个session最多更新一次缓存，但是依然保证每次请求都更新session的最后访问时间
-	 * 活动session策略：
-	 * 如果同一个session对象正在等待更新缓存，则该线程更新执行session.active后返回，
+	 * 活动session策略： 如果同一个session对象正在等待更新缓存，则该线程更新执行session.active后返回，
 	 * 如果该session在超时时间减5秒内,则装入待更新缓存的容器，并且查看有没有更新session缓存执行器正在运行，没有则启动更新session缓存执行器
 	 * 如果该session已经超时，此函数不判断是否超时，只要进来session都进行活动。
 	 * session若超时，其实也是获取不到的，因为缓存已经进行存储时间限制，即使程序执行耗时误差，session设计允许最大超时15秒。
@@ -118,11 +111,14 @@ public class MySessionContext {
 		// session对象还在等待更新缓存，该线程只执行session签到，不需去更新缓存
 		if (oldMySession != null) {
 			oldMySession.active();
+			if (WAIT_ACTIVE_SESSION_MAP.size() > 100) {
+				excutActiveSessionTask();
+			}
 			return;
 		}
-		LocalDateTime now=LocalDateTime.now();
-		//超时时间内访问过
-		if (MyComparable.creat(mySession.getLastActiveTime().plusSeconds(sessionTimeout-5)).isGt(now)) {
+		LocalDateTime now = LocalDateTime.now();
+		// 超时时间内访问过
+		if (MyComparable.creat(mySession.getLastActiveTime().plusSeconds(sessionTimeout - 5)).isGt(now)) {
 			/*
 			 * 延后同步缓存
 			 */
@@ -144,6 +140,11 @@ public class MySessionContext {
 	}
 
 	/**
+	 * 活动session任务开关
+	 */
+	private final AtomicInteger ACTIVE_SESSION_FLAG = new AtomicInteger(0);
+
+	/**
 	 * 活动session任务，有任务时，保证最多只有一个线程执行
 	 * 
 	 */
@@ -153,7 +154,9 @@ public class MySessionContext {
 		}
 		THREAD_POOL.execute(() -> {
 			do {
-				ThreadTool.sleep(5000);
+				if (WAIT_ACTIVE_SESSION_MAP.size() < 100) {
+					ThreadTool.sleep(5000);
+				}
 				Iterator<String> keyIt = WAIT_ACTIVE_SESSION_MAP.keySet().iterator();
 				while (keyIt.hasNext()) {
 					String key = keyIt.next();

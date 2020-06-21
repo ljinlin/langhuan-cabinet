@@ -20,14 +20,6 @@ public interface ICache {
 	 */
 	void rightPush(String key, Object value);
 
-	/**
-	 * 队列存储，在右边添加元素
-	 * 
-	 * @param key 缓存键
-	 * @param value 缓存值
- 	 * @param timeOutSecond 缓存超时时间（秒） 保存时间(秒)，超出时间，被清除
-	 */
-	void rightPush(String key, Object value, int timeOutSecond);
 
 	/**
 	 * 删除队列的最后一个元素
@@ -52,7 +44,7 @@ public interface ICache {
 	 * @param key 缓存键
 	 * @param timeOutSecond 缓存超时时间（秒）   保存时间(秒)，超出时间，被清除
 	 * @param mappingFunction  缓存提供者
-	 * @return 返回保存的对象
+	 * @return 缓存的对象
 	 */
 	public <T> T computeIfAbsent(String key, int timeOutSecond, Function<String, T> mappingFunction);
 
@@ -71,9 +63,9 @@ public interface ICache {
 	 * 
 	 * @param key 缓存键
 	 * @param value 缓存值
-	 * @return 没有返回true
+	 * @return 返回已经缓存的对象，没有缓存返回null
 	 */
-	boolean putIfAbsent(String key, Object value);
+	 <T> T putIfAbsent(String key, Object value);
 
 	/**
 	 * 没有就put，否则不put，
@@ -83,7 +75,7 @@ public interface ICache {
 	 * @param timeOutSecond 缓存超时时间（秒） 保存时间(秒)，超出时间，被清除
 	 * @return 没有返回true
 	 */
-	boolean putIfAbsent(String key, Object value, int timeOutSecond);
+	<T> T putIfAbsent(String key, Object value, int timeOutSecond);
 
 	/**
 	 * 获取缓存
@@ -125,4 +117,11 @@ public interface ICache {
 	 * @return 返回缓存的对象
 	 */
 	<T> T removeAndGet(String key);
+	
+	/**
+	 * 获取数据（可能存在过期数据）总数
+	 * 
+	 * @return 缓存总数
+	 */
+	 long size();
 }
