@@ -70,7 +70,7 @@ public class MultilevelCache implements ICache {
 	 * 
 	 * @param <T>      返回的对象类型
 	 * @param key      缓存键
-	 * @param supplier 缓存值提供者
+	 * @param mappingFunction 缓存值提供者
 	 * @return 返回缓存的对象
 	 */
 	public <T> T computeIfAbsent(String key, Function<String, T> mappingFunction) {
@@ -83,7 +83,7 @@ public class MultilevelCache implements ICache {
 	 * @param <T>           返回的对象类型
 	 * @param key           缓存键
 	 * @param timeOutSecond 缓存超时时间（秒）
-	 * @param supplier      缓存数据计算者
+	 * @param mappingFunction      缓存数据计算者
 	 * @return 返回缓存的对象
 	 */
 	public <T> T computeIfAbsent(String key, int timeOutSecond, Function<String, T> mappingFunction) {

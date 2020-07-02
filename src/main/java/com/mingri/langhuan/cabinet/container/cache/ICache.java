@@ -59,8 +59,10 @@ public interface ICache {
 	void put(String key, Object value, int timeOutSecond);
 
 	/**
+	 * 
 	 * 没有就put，否则不put，
 	 * 
+	 * @param <T>返回的对象类型
 	 * @param key 缓存键
 	 * @param value 缓存值
 	 * @return 返回已经缓存的对象，没有缓存返回null
@@ -69,7 +71,7 @@ public interface ICache {
 
 	/**
 	 * 没有就put，否则不put，
-	 * 
+	 * @param <T>返回的对象类型
 	 * @param key 缓存键
 	 * @param value 缓存值
 	 * @param timeOutSecond 缓存超时时间（秒） 保存时间(秒)，超出时间，被清除

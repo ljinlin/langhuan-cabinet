@@ -12,9 +12,6 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.codec.CharEncoding;
-import org.apache.poi.ss.usermodel.Workbook;
-
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 
@@ -83,14 +80,13 @@ public class HttpTool {
 		return reques.getParameter(paramName);
 	}
 
-	public static final String CONTENT_TYPE_EXCEL = "application/vnd.ms-excel";
 
 	public static void responseJson(HttpServletResponse response, Object result, String contentType)
 			throws IOException {
-		response.setHeader("Content-type", "text/html;charset=" + CharEncoding.UTF_8);
-		try (OutputStreamWriter osw = new OutputStreamWriter(response.getOutputStream(), CharEncoding.UTF_8);
+		response.setHeader("Content-type", "text/html;charset=UTF-8");
+		try (OutputStreamWriter osw = new OutputStreamWriter(response.getOutputStream(), "UTF-8");
 				PrintWriter writer = new PrintWriter(osw, true);) {
-			response.setCharacterEncoding(CharEncoding.UTF_8);
+			response.setCharacterEncoding("UTF-8");
 			String jsonStr = StrTool.EMPTY;
 			if (result != null) {
 				if (result instanceof String) {
@@ -104,11 +100,11 @@ public class HttpTool {
 		}
 	}
 
-	public static void responseExcel(HttpServletResponse response, InputStream inputStream, String excelName)
+	public static void responseFile(HttpServletResponse response, InputStream inputStream, String fileName)
 			throws IOException {
 		response.reset();
-		response.setContentType(CONTENT_TYPE_EXCEL); // 改成输出excel文件
-		response.setHeader("Content-disposition", "attachment; filename=" + excelName);
+		response.setContentType("application/octet-stream"); // 改成输出excel文件
+		response.setHeader("Content-disposition", "attachment; filename=" + fileName);
 		try (OutputStream out = response.getOutputStream()) {// 创建一个文件流，读入Excel文件
 			byte[] bt = new byte[1024];
 			int n;
@@ -124,20 +120,9 @@ public class HttpTool {
 		}
 	}
 
-	public static void responseExcel(HttpServletResponse response, Workbook wb, String respFileName)
-			throws IOException {
-		response.reset();
-		response.setContentType(CONTENT_TYPE_EXCEL); // 改成输出excel文件
-		response.setHeader("Content-disposition", "attachment; filename=" + respFileName);
-		try (OutputStream stream = response.getOutputStream()) {
-			wb.write(stream);
-			wb.close();
-		}
-	}
-
 	public static void responseExcel(HttpServletResponse response, File excel) throws IOException {
 		try (InputStream inputStream = new FileInputStream(excel)) {
-			responseExcel(response, inputStream, excel.getName());
+			responseFile(response, inputStream, excel.getName());
 		}
 	}
 
