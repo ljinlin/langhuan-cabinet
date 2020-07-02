@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.github.ljinlin</groupId>
 	<artifactId>langhuan-cabinet</artifactId>
-	<version>1.1.5-beta1</version>
+	<version>1.1.6-beta1</version>
 	<name>langhuan-cabinet</name>
 	<description>This is a little book cabinet of Java.There are the most abstract state, type and other constants, a variety of components: unique id generator, dynamic data source components, cache components, interface specification groups, and a variety of tools: time, string, validation, reflection, object and other operating tools</description>
 	<url>https://github.com/ljinlin/langhuan-cabinet</url>

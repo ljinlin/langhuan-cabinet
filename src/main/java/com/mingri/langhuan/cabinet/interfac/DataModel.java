@@ -10,6 +10,4 @@ package com.mingri.langhuan.cabinet.interfac;
 public interface DataModel {
 	String getId();
 
-	String getVersion();
-
 }
