@@ -12,7 +12,7 @@ import com.mingri.langhuan.cabinet.pojo.PagePojo;
  *
  * @param <T> 请求数据类型
  */
-public class Requ<T extends DataModel> implements Serializable {
+public class Requ<T> implements Serializable {
 
 	/**
 	 * 
