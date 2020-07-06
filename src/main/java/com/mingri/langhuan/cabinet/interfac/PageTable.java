@@ -32,9 +32,8 @@ public class PageTable<T> {
 		this.page = page;
 	}
 
-	public PageTable(Page<T> page) {
-		this.collection = page.getResult();
-		this.page = new PagePojo(page.getPageNum(), page.getPageSize(), page.getTotal());
+	public PageTable(PagePojo page) {
+		this.page = new PagePojo(page.getPageNo(), page.getLimit(), page.getTotal());
 	}
 
 	public Collection<T> getCollection() {

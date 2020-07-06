@@ -8,8 +8,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.springframework.util.Assert;
-
+import com.mingri.langhuan.cabinet.interfac.Assert;
 import com.mingri.langhuan.cabinet.tool.MyComparable;
 import com.mingri.langhuan.cabinet.tool.ThreadTool;
 
@@ -68,7 +67,7 @@ public class MySessionContext {
 	 * @return session对象
 	 */
 	public MySession loginSession(Object sessionUser) {
-		Assert.isTrue(sessionUser != null, "sessionUser 不能为null");
+		Assert.illegalArg(sessionUser == null, "sessionUser 不能为null");
 		MySession mySession = createSession();
 		String sessionKey = buildSessionCacheKey(mySession.getId());
 		mySession.login(sessionUser);

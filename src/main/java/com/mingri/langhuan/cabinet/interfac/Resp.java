@@ -164,17 +164,6 @@ public class Resp implements Serializable {
 		return false;
 	}
 
-	public static class Assert {
-
-		public static void illegalArgument(BooleanSupplier booleanSupplier, String... msg) {
-			if (booleanSupplier.getAsBoolean()) {
-				return;
-			}
-			throw new IllegalArgumentException(StrTool.concat((Object[])msg));
-		}
-
-	}
-
 	
 	public static class Builder {
 

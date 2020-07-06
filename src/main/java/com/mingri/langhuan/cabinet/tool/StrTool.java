@@ -72,7 +72,11 @@ public class StrTool {
 	 */
 	public static boolean checkEmpty(Object obj) {
 		if (obj != null) {
-			String str = obj.toString().trim();
+			String str = obj.toString();
+			if (str.length() == 0) {
+				return true;
+			}
+			str = str.trim();
 			return str.length() == 0 || str.equals("null");
 		}
 		return true;
