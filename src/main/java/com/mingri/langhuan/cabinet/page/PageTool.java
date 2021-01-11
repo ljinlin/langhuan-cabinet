@@ -1,12 +1,9 @@
-package com.mingri.langhuan.cabinet.handler;
+package com.mingri.langhuan.cabinet.page;
 
 import java.util.Collection;
 import java.util.List;
 
-import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
-import com.mingri.langhuan.cabinet.interfac.PageTable;
-import com.mingri.langhuan.cabinet.pojo.PagePojo;
 import com.mingri.langhuan.cabinet.tool.StrTool;
 
 /**
@@ -15,12 +12,17 @@ import com.mingri.langhuan.cabinet.tool.StrTool;
  * @author ljl
  *
  */
-public final class PageHandler {
+public final class PageTool {
 
 	static final ThreadLocal<PagePojo> LOCAL_PAGE = new ThreadLocal<PagePojo>();
 
-	public static void setPage(PagePojo pagePojo) {
-		LOCAL_PAGE.set(pagePojo);
+
+	/**
+	 * 存储到到当前线程ThreadLocal
+	 *@author jinlin Li
+	 */
+	public static PagePojo getCurrentPage() {
+		return LOCAL_PAGE.get();
 	}
 
 	/**
@@ -39,7 +41,7 @@ public final class PageHandler {
 	 * 开始分页，如果分页值是有效的才分页，否在不分页
 	 */
 	public static void startPageIfValid() {
-		PageHandler.startPageIfValid(null);
+		PageTool.startPageIfValid(null);
 	}
 
 	/**
@@ -57,7 +59,7 @@ public final class PageHandler {
 	 * 开始分页，如果分页值是空值，则设置默认分页值再分页
 	 */
 	public static void startPageDftVal() {
-		PageHandler.startPageDftVal(null);
+		PageTool.startPageDftVal(null);
 	}
 
 	/**
@@ -77,7 +79,7 @@ public final class PageHandler {
 	 * 开始分页，根据分页值
 	 */
 	public static void startPage() {
-		PageHandler.startPage(null);
+		PageTool.startPage(null);
 	}
 
 	/**
@@ -103,23 +105,16 @@ public final class PageHandler {
 				&& LOCAL_PAGE.get().getPageNo() > 0 && LOCAL_PAGE.get().getLimit() > -1;
 	}
 
-	public static <T> PageTable<T> toPageTable(List<T> page) {
-		PageTable<T> pgtb = null;
-		if (page instanceof Page) {
-			pgtb = new PageTable<>((Page<T>) page);
-		} else {
-			pgtb = new PageTable<>();
-			pgtb.setCollection(page);
-		}
-		return pgtb;
+	public static <T> PageTable<T> toPageTable(List<T> pageOrList) {
+		return new PageTable<>(pageOrList);
 	}
 
-	public static <T> PageTable<T> toPageTable(PagePojo page, Collection<T> list) {
-		return new PageTable<>(list, page);
-	}
 
 	public static <T> PageTable<T> toPageTable(Collection<T> collection, int pageNo, int pageSize, long total) {
-		return new PageTable<>(collection, new PagePojo(pageNo, pageSize, total));
+		PagePojo pj=new PagePojo(pageNo, pageSize, total);
+		PageTable<T> pt= new PageTable<>(collection);
+		pt.setPage(pj);
+		return pt;
 	}
 
 }

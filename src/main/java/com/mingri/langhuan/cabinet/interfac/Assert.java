@@ -81,7 +81,7 @@ public class Assert {
 	 * @param args 要断言的参数和参数名称
 	 * @return 返回错误参数的索引
 	 */
-	public static void emptyArgAndPrompt(String tailmsg,Object... args) {
+	public static void emptyArgAndPrompt(String prompt,Object... args) {
 		StringBuilder argNames=null;
 		for (int i = 0; i < args.length; i+=2) {
 			if (StrTool.checkEmpty(args[i+1])) {
@@ -93,7 +93,7 @@ public class Assert {
 		}
 		if (argNames!=null) {
 			argNames.deleteCharAt(argNames.length()-1);
-			argNames.append(tailmsg);
+			argNames.append(prompt);
 			throw new IllegalArgumentException(argNames.toString());
 		}
 	}

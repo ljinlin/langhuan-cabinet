@@ -65,7 +65,7 @@ public class StrTool {
 	}
 
 	/**
-	 * 是否是 null、""、" "、"null"
+	 * 是否是 null、""、" "、"null"、"undefined"
 	 * 
 	 * @param obj 要判断的对象
 	 * @return 布尔值
@@ -76,8 +76,12 @@ public class StrTool {
 			if (str.length() == 0) {
 				return true;
 			}
-			str = str.trim();
-			return str.length() == 0 || str.equals("null");
+			for (int i = 0; i < str.length(); i++) {
+				if (!Character.isWhitespace(str.charAt(i))) {
+					return false;
+				}
+			}
+			return str.equals("null") || str.equals("undefined");
 		}
 		return true;
 	}

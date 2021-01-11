@@ -9,8 +9,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.mingri.langhuan.cabinet.interfac.Assert;
-import com.mingri.langhuan.cabinet.tool.MyComparable;
 import com.mingri.langhuan.cabinet.tool.ThreadTool;
+import com.mingri.langhuan.cabinet.tool.other.Comparator;
 
 public class MySessionContext {
 
@@ -117,7 +117,7 @@ public class MySessionContext {
 		}
 		LocalDateTime now = LocalDateTime.now();
 		// 超时时间内访问过
-		if (MyComparable.creat(mySession.getLastActiveTime().plusSeconds(sessionTimeout - 5)).isGt(now)) {
+		if (Comparator.creat(mySession.getLastActiveTime().plusSeconds(sessionTimeout - 5)).isGt(now)) {
 			/*
 			 * 延后同步缓存
 			 */
@@ -129,7 +129,7 @@ public class MySessionContext {
 			// 即将过期，立刻同步缓存
 			synchronized (ThreadTool.buildLock(mySession.getId())) {
 				// 双重判断，如果是刚刚15秒内才活跃，则不再更新缓存
-				if (MyComparable.creat(mySession.getLastActiveTime().plusSeconds(15)).isGt(now)) {
+				if (Comparator.creat(mySession.getLastActiveTime().plusSeconds(15)).isGt(now)) {
 					return;
 				}
 				mySession.active();

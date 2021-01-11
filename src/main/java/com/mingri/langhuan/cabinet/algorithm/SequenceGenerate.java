@@ -7,6 +7,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import com.mingri.langhuan.cabinet.tool.DateTool;
 import com.mingri.langhuan.cabinet.tool.StrTool;
+import com.mingri.langhuan.cabinet.tool.ThreadTool;
 
 /**
  * 序列号生成器：
@@ -38,7 +39,7 @@ public class SequenceGenerate {
 	/**
 	 * 全局开始序号
 	 */
-	private byte startNum = 0;
+	private byte startNum = 1;
 
 	private final Map<String, AtomicInteger> SEQUENCE_MAP = new HashMap<String, AtomicInteger>();
 
@@ -69,10 +70,8 @@ public class SequenceGenerate {
 	 * 
 	 * @param cps 最高并发量/每秒
 	 */
-	public void setCps(Integer cps) {
-		if (cps != null) {
-			maxNo = cps + 1;
-		}
+	public void setCps(int cps) {
+		maxNo = cps + 1;
 	}
 
 	/**
@@ -92,32 +91,33 @@ public class SequenceGenerate {
 	 */
 	public String nexId(String sequenceKey, int cps) {
 		AtomicInteger sequence = SEQUENCE_MAP.get(sequenceKey);
+		int no = startNum;
 		if (sequence == null) {
-			synchronized (SEQUENCE_MAP) {
-				sequence = SEQUENCE_MAP.get(sequenceKey);
-				if (sequence == null) {
-					sequence = new AtomicInteger(startNum);
-					SEQUENCE_MAP.put(sequenceKey, sequence);
-				}
+			synchronized (ThreadTool.buildLock(sequenceKey)) {
+				sequence = SEQUENCE_MAP.computeIfAbsent(sequenceKey, (k) -> new AtomicInteger(startNum));
 			}
-		}
-		int no = sequence.incrementAndGet();
-		String strNo = null;
-		int len = ((cps - 1) + "").length();
-		if (no < cps) {
-			strNo = StrTool.fill0(String.valueOf(no), len);
 		} else {
-			synchronized (SEQUENCE_MAP) {
-				no = sequence.incrementAndGet();
-				if (no < cps) {
-					strNo = StrTool.fill0(String.valueOf(no), len);
+			no = sequence.incrementAndGet();
+			if (no >= cps) {
+				if (sequence.compareAndSet(no, startNum)) {
+					//复原成功
+					no = startNum;
 				} else {
-					sequence.set(startNum);
-					no = sequence.incrementAndGet();
-					strNo = StrTool.fill0(String.valueOf(no), len);
+					//复原失败，同步复原
+					synchronized (ThreadTool.buildLock(sequenceKey)) {
+						no = sequence.incrementAndGet();
+						if (no >= cps) {
+							//复原
+							sequence.set(startNum);
+							no = startNum;
+						}
+					}
 				}
 			}
 		}
+
+		int len = ((cps - 1) + "").length();
+		String strNo = StrTool.fill0(String.valueOf(no), len);
 		return this.currentTime().concat(strNo).concat(appNo);
 	}
 
@@ -128,7 +128,7 @@ public class SequenceGenerate {
 	 * @return 返回时间戳
 	 */
 	public String currentTime() {
-		return LocalDateTime.now().format(DateTool.yyMdHms_FMTS);
+		return DateTool.FmtEnum.yyMdHms.parse(LocalDateTime.now());
 	}
-
+	
 }

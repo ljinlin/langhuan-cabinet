@@ -2,8 +2,7 @@ package com.mingri.langhuan.cabinet.interfac;
 
 import java.io.Serializable;
 
-import com.mingri.langhuan.cabinet.handler.PageHandler;
-import com.mingri.langhuan.cabinet.pojo.PagePojo;
+import com.mingri.langhuan.cabinet.page.PagePojo;
 
 /**
  * 请求对象
@@ -22,30 +21,26 @@ public class Requ<T> implements Serializable {
 	/**
 	 * 请求对象
 	 */
-	private T t;
+	private T data;
 
 	/**
 	 * 分页对象
 	 */
 	private PagePojo page;
 
-	public Requ() {
-		PageHandler.setPage(page);
-	}
-
 	public T getT() {
-		return t;
+		return data;
 	}
 
-	public T getTOfDft(T dft) {
-		if(t==null) {
-			t=dft;
+	public T getTOfDft(T dftData) {
+		if(data==null) {
+			data=dftData;
 		}
-		return t;
+		return data;
 	}
 
-	public void setT(T t) {
-		this.t = t;
+	public void setData(T data) {
+		this.data = data;
 	}
 
 	public PagePojo getPage() {
@@ -53,7 +48,9 @@ public class Requ<T> implements Serializable {
 	}
 
 	public void setPage(PagePojo page) {
-		PageHandler.setPage(page);
+		if(page!=null) {
+			page.toThreadLocal();
+		}
 		this.page = page;
 	}
 	

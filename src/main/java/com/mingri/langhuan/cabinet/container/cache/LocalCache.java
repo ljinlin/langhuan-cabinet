@@ -1,7 +1,8 @@
 package com.mingri.langhuan.cabinet.container.cache;
 
+import java.text.DateFormat.Field;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoField;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -14,6 +15,7 @@ import java.util.function.Function;
 import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
 import com.googlecode.concurrentlinkedhashmap.Weighers;
 import com.mingri.langhuan.cabinet.tool.CacheTool;
+import com.mingri.langhuan.cabinet.tool.DateTool;
 import com.mingri.langhuan.cabinet.tool.ThreadTool;
 
 /**
@@ -53,11 +55,6 @@ public class LocalCache implements ICache {
 			.maximumWeightedCapacity(MAXCOUNT).weigher(Weighers.singleton()).initialCapacity(100).build();
 
 	/**
-	 * 时间格式化对象
-	 */
-	public static final DateTimeFormatter yyyyMMddHHmmss_FMT = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
-
-	/**
 	 * 清理缓存线程,防止频繁的缓存清理 创建线程消耗性能
 	 */
 	private static final ExecutorService THREAD_POOL = Executors.newCachedThreadPool();
@@ -75,11 +72,8 @@ public class LocalCache implements ICache {
 	@SuppressWarnings("unchecked")
 	@Override
 	public void rightPush(String key, Object value) {
-		ConcurrentLinkedDeque<Object> linkList = (ConcurrentLinkedDeque<Object>) getOfContainer(key);
-		if (linkList == null) {
-			linkList = new ConcurrentLinkedDeque<>();
-			linkList = (ConcurrentLinkedDeque<Object>) CONTAINER.putIfAbsent(key, linkList);
-		}
+		ConcurrentLinkedDeque<Object> linkList = (ConcurrentLinkedDeque<Object>) CONTAINER.computeIfAbsent(key,
+				(k) -> new ConcurrentLinkedDeque<>());
 		linkList.offer(value);
 		LocalCache.streamContainer();
 	}
@@ -87,11 +81,8 @@ public class LocalCache implements ICache {
 	@SuppressWarnings("unchecked")
 	@Override
 	public void leftPush(String key, Object value) {
-		ConcurrentLinkedDeque<Object> linkList = (ConcurrentLinkedDeque<Object>) getOfContainer(key);
-		if (linkList == null) {
-			linkList = new ConcurrentLinkedDeque<>();
-			linkList = (ConcurrentLinkedDeque<Object>) CONTAINER.putIfAbsent(key, linkList);
-		}
+		ConcurrentLinkedDeque<Object> linkList = (ConcurrentLinkedDeque<Object>) CONTAINER.computeIfAbsent(key,
+				(k) -> new ConcurrentLinkedDeque<>());
 		linkList.offerFirst(value);
 		LocalCache.streamContainer();
 	}
@@ -99,7 +90,7 @@ public class LocalCache implements ICache {
 	@SuppressWarnings("unchecked")
 	@Override
 	public <T> T rightPop(String key) {
-		ConcurrentLinkedDeque<Object> linkList = (ConcurrentLinkedDeque<Object>) getOfContainer(key);
+		ConcurrentLinkedDeque<Object> linkList = (ConcurrentLinkedDeque<Object>) CONTAINER.get(key);
 		if (linkList == null) {
 			return null;
 		}
@@ -214,7 +205,7 @@ public class LocalCache implements ICache {
 			return;
 		}
 		THREAD_POOL.execute(() -> {
-			long now = Long.parseLong(LocalDateTime.now().format(yyyyMMddHHmmss_FMT));
+			long now = Long.valueOf(DateTool.FmtEnum.yMdHms.parse(LocalDateTime.now()));
 			do {
 				/*
 				 * 1、超时缓存清除
@@ -234,7 +225,7 @@ public class LocalCache implements ICache {
 	 * @return
 	 */
 	private static boolean isTimeOut(String key) {
-		long now = Long.parseLong(LocalDateTime.now().format(yyyyMMddHHmmss_FMT));
+		long now = Long.valueOf(DateTool.FmtEnum.yMdHms.parse(LocalDateTime.now()));
 		return LocalCache.isTimeOut(key, now);
 	}
 
@@ -290,7 +281,6 @@ public class LocalCache implements ICache {
 		if (timeOutSecond != 0) {
 			dt = dt.plusSeconds(timeOutSecond);
 		}
-		return Long.parseLong(dt.format(yyyyMMddHHmmss_FMT));
+		return Long.valueOf(DateTool.FmtEnum.yMdHms.parse(dt));
 	}
-
 }

@@ -16,11 +16,11 @@ public class CollectionTool {
 	}
 
 	public static boolean notEmpty(Collection<?> collection) {
-		return collection != null && !collection.isEmpty();
+		return !isEmpty(collection);
 	}
 	
 	public static boolean isEmpty(Collection<?> collection) {
-		return !notEmpty(collection);
+		return collection == null || collection.isEmpty();
 	}
 
 	/**

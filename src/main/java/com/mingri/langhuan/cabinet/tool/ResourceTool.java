@@ -5,8 +5,14 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
+import org.springframework.core.io.support.ResourcePatternResolver;
 
 public class ResourceTool {
 	public static final String CLASSPATH_PREFIX = "classpath:";
@@ -30,5 +36,23 @@ public class ResourceTool {
 		}else {
 			throw new FileNotFoundException(path);
 		}
+	}
+	
+	
+	public static List<Resource> getResource(String locationPattern){
+    	String[] locationPatternAry=locationPattern.split(",");
+ 	   ResourcePatternResolver resourceResolver = new PathMatchingResourcePatternResolver();
+ 	    List<Resource> resources = new ArrayList<Resource>();
+ 	    if (locationPatternAry != null) {
+ 	      for (String mapperLocation : locationPatternAry) {
+ 	        try {
+ 	          Resource[] mappers = resourceResolver.getResources(mapperLocation);
+ 	          resources.addAll(Arrays.asList(mappers));
+ 	        } catch (IOException e) {
+ 	          // ignore
+ 	        }
+ 	      }
+ 	    }
+ 	    return resources;
 	}
 }
